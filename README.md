@@ -8,17 +8,15 @@ Switch es una plataforma que conecta a los vecinos de una ciudad con las institu
 
 ---
 
-## Capturas de la app
-
-> 📸 Colocar las imágenes en `docs/screenshots/` con estos nombres (o editar las rutas):
+## 📸  Capturas de la app
 
 | Voluntariado | Catálogo P2P | Perfil e insignias |
 |:---:|:---:|:---:|
-| ![Voluntariado](docs/screenshots/voluntariado.png) | ![Catálogo](docs/screenshots/catñalogo.png) | ![Perfil](docs/screenshots/perfil.png) |
+| ![Voluntariado](docs/screenshots/voluntariado.jpg) | ![Catálogo](docs/screenshots/catalogo.jpg) | ![Perfil](docs/screenshots/perfil.jpg) |
 
-| Escaneo QR + GPS | Chat | Accesibilidad |
+| Chat | Accesibilidad | Panel de administrador |
 |:---:|:---:|:---:|
-| ![QR](docs/screenshots/qr.png) | ![Chat](docs/screenshots/chat.png) | ![Accesibilidad](docs/screenshots/accesibilidad.png) |
+| ![Chat](docs/screenshots/chat.jpg) | ![Accesibilidad](docs/screenshots/accesibilidad.jpg) | ![Admin](docs/screenshots/admin.jpg) |
 
 ---
 

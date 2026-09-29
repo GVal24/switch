@@ -12,7 +12,7 @@ import 'geolocalizacion_service.dart';
 
 class ApiService {
   // Configuración de red local
-  static const String _ipComputadoraLocal = '192.168.0.162';
+  static const String _ipComputadoraLocal = '192.168.1.5';
   static const String _puerto = '3000';
 
   static String get baseUrl {

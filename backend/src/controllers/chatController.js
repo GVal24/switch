@@ -55,7 +55,7 @@ const enviarMensaje = asyncWrapper(async (req, res) => {
         await ChatModel.crearMensaje({
           emisorId: receptorId,
           receptorId: emisorId,
-          texto: `¡Hola! Gracias por comunicarte con ${receptorNombre}. Podés coordinar con nosotros tu día de voluntariado.`
+          texto: `¡Hola! Gracias por comunicarte con ${receptorNombre}. Si querés, podés enviarnos tu disponibilidad y pronto nos pondremos en contacto para coordinar. ¡Gracias por tu interés en ayudarnos!`
         });
       } catch (e) {
         console.error('Error en la respuesta automática del chat:', e.message);

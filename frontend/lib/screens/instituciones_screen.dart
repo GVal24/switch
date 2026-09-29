@@ -93,9 +93,125 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
     return res['exito'] == true;
   }
 
-  // 🟢 Valida presencia general (habilita a publicar en el catálogo)
+  // 🟢 Valida presencia general (habilita a publicar en el catálogo).
+  // Si la institución tiene varias necesidades activas, ofrece elegir cuál
+  // cubrir exactamente (así solo se descuenta esa), o seguir de forma general.
   Future<void> _escanearQRValidarGeolocalizacion(Map<String, dynamic> inst) async {
-    await _validarPresencia(inst, null);
+    final String? qrHash = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => QrScannerScreen(nombreInstitucion: inst['nombre'] ?? 'la institución'),
+      ),
+    );
+    if (!mounted || qrHash == null || qrHash.trim().isEmpty) return;
+
+    // Necesidades activas de la institución (algunas pueden estar cubiertas)
+    final List<dynamic> cupos = ((inst['cupos'] as List<dynamic>?) ?? [])
+        .where((c) {
+          final int max = c['cupo_maximo'] ?? c['cupoMaximo'] ?? 1;
+          final int actual = c['cupo_actual'] ?? c['cupoActual'] ?? 0;
+          return actual < max;
+        })
+        .toList();
+
+    // Si hay varias, mostramos un selector para que elija UNA sola y así no
+    // se le suma una ayuda a todas por error.
+    if (cupos.length > 1) {
+      Map<String, dynamic>? cupoElegido = await _elegirNecesidad(inst, cupos);
+      if (!mounted) return;
+      if (cupoElegido == null) return; // canceló
+      final bool esGeneral = cupoElegido['_general'] == true;
+      await _validarPresencia(
+        inst,
+        esGeneral ? null : Map<String, dynamic>.from(cupoElegido),
+      );
+      await _cargarInstituciones();
+      return;
+    }
+
+    // Una sola necesidad (o ninguna): validación directa.
+    final Map<String, dynamic>? cupoUnico = cupos.length == 1
+        ? Map<String, dynamic>.from(cupos.first)
+        : null;
+    await _validarPresencia(inst, cupoUnico);
+  }
+
+  // Muestra las necesidades activas para que el usuario elija cuál cubrir.
+  Future<Map<String, dynamic>?> _elegirNecesidad(
+      Map<String, dynamic> inst, List<dynamic> cupos) {
+    return showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      backgroundColor: context.colorTarjeta,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  '¿Qué necesidad vas a cubrir en ${inst['nombre'] ?? 'la institución'}?',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(ctx).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Elegí UNA — solo se sumará la ayuda a esa necesidad.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: context.colorTextoSuave, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      ...cupos.map((cupo) {
+                        final String prioridad = (cupo['prioridad'] ?? 'GENERAL').toString();
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: context.colorTextoSuave.withValues(alpha: 0.2)),
+                            ),
+                            title: Text(cupo['titulo'] ?? ''),
+                            subtitle: Text(prioridad == 'URGENTE'
+                                ? 'Necesidad urgente'
+                                : prioridad == 'PRIORITARIA'
+                                    ? 'Necesidad prioritaria'
+                                    : 'Prioridad general'),
+                            leading: Icon(
+                              prioridad == 'URGENTE' ? Icons.priority_high_rounded : Icons.volunteer_activism_rounded,
+                              color: prioridad == 'URGENTE' ? Colors.redAccent : AppTheme.acentoAzulTurquesa,
+                            ),
+                            onTap: () => Navigator.pop(ctx, cupo),
+                          ),
+                        );
+                      }),
+                      const Divider(),
+                      ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        leading: const Icon(Icons.shield_outlined, color: AppTheme.acentoVerdeEco),
+                        title: const Text('Solo activar habilitación'),
+                        subtitle: const Text('Validar presencia sin asociar a una necesidad concreta'),
+                        onTap: () => Navigator.pop(ctx, {'_general': true}),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // 🟢 Ofrece ayuda concreta a una necesidad: escanea el QR de la institución

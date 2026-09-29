@@ -81,7 +81,8 @@ INSERT INTO resenas (intercambio_id, autor_id, destino_id, puntaje, comentario) 
   (5, 2, 1, 4, 'Los libros estaban muy cuidados.'),
   (6, 2, 1, 5, 'Puntual y amable, un gusto truequear así.');
 
--- 10. Reajustar las secuencias tras los inserts con ID explícito
+-- 10. Reajustar las secuencias tras los inserts base con ID explícito ANTES
+--     de cargar los datos adicionales (que usan IDs automáticos).
 SELECT setval('usuarios_id_seq', (SELECT MAX(id) FROM usuarios));
 SELECT setval('instituciones_id_seq', (SELECT MAX(id) FROM instituciones));
 SELECT setval('cupos_necesidad_id_seq', (SELECT MAX(id) FROM cupos_necesidad));
@@ -91,3 +92,102 @@ SELECT setval('mensajes_chat_id_seq', (SELECT MAX(id) FROM mensajes_chat));
 SELECT setval('reportes_id_seq', (SELECT MAX(id) FROM reportes));
 SELECT setval('intercambios_id_seq', (SELECT MAX(id) FROM intercambios));
 SELECT setval('resenas_id_seq', (SELECT MAX(id) FROM resenas));
+
+-- ============================================================
+-- DATOS FICTICIOS ADICIONALES PARA ENRIQUECER EL PANEL DE ADMIN
+-- (usuarios, nexos, publicaciones, trueques, reportes y
+--  sugerencias de esfuerzo extra para las capturas)
+-- ============================================================
+
+-- 11. Usuarios adicionales (sube el KPI "Usuarios")
+--     Password: clave123 (misma hash bcrypt que el seed)
+INSERT INTO usuarios (dni, nombre, apellido, telefono, password, validado_mayor_edad, rol, activo) VALUES
+  ('31222444', 'Laura',      'Fernández', '2281334455', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
+  ('27333455', 'Diego',      'Martínez',  '2281778899', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
+  ('29888777', 'Sofía',      'López',     '2281554433', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'DELEGADO', TRUE),
+  ('33555666', 'Martín',     'Pérez',     '2281221100', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
+  ('34119988', 'Valentina',  'Sosa',      '2281998877', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
+  ('30888999', 'Joaquín',    'Romero',    '2281445566', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
+  ('35555667', 'Camila',     'Díaz',      '2281665544', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
+  ('31888999', 'Nicolás',    'Álvarez',   '2281789900', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'DELEGADO', TRUE);
+
+-- 12. Nexos Sociales adicionales (sube "Asistencias QR")
+INSERT INTO nexos_sociales (usuario_id, cupo_necesidad_id, institucion_id, metodo_validacion, latitud_usuario, longitud_usuario, nivel_impacto, estado, fecha_activacion, fecha_expiracion) VALUES
+  (5,  2, 1, 'QR_GPS',             -36.778130, -59.858420, 'ALTO',   'ACTIVO',   CURRENT_TIMESTAMP - INTERVAL '30 days',  CURRENT_TIMESTAMP + INTERVAL '60 days'),
+  (6,  3, 2, 'APROBACION_DELEGADO', -36.782510, -59.861210, 'MEDIO',  'ACTIVO',   CURRENT_TIMESTAMP - INTERVAL '20 days',  CURRENT_TIMESTAMP + INTERVAL '70 days'),
+  (7,  4, 3, 'QR_GPS',             -36.779510, -59.858210, 'SIMPLE', 'ACTIVO',   CURRENT_TIMESTAMP - INTERVAL '10 days',  CURRENT_TIMESTAMP + INTERVAL '80 days'),
+  (8,  1, 1, 'QR_GPS',             -36.778140, -59.858430, 'MEDIO',  'ACTIVO',   CURRENT_TIMESTAMP - INTERVAL '25 days',  CURRENT_TIMESTAMP + INTERVAL '65 days'),
+  (9,  3, 2, 'APROBACION_DELEGADO', -36.782520, -59.861220, 'ALTO',   'ACTIVO',   CURRENT_TIMESTAMP - INTERVAL '15 days',  CURRENT_TIMESTAMP + INTERVAL '75 days'),
+  (10, 4, 3, 'QR_GPS',             -36.779520, -59.858220, 'MEDIO',  'ACTIVO',   CURRENT_TIMESTAMP - INTERVAL '8 days',   CURRENT_TIMESTAMP + INTERVAL '82 days'),
+  (11, 2, 1, 'APROBACION_DELEGADO', -36.778150, -59.858440, 'SIMPLE', 'ACTIVO',   CURRENT_TIMESTAMP - INTERVAL '12 days',  CURRENT_TIMESTAMP + INTERVAL '78 days'),
+  (12, 1, 1, 'QR_GPS',             -36.778160, -59.858450, 'MEDIO',  'ACTIVO',   CURRENT_TIMESTAMP - INTERVAL '6 days',   CURRENT_TIMESTAMP + INTERVAL '84 days');
+
+-- 13. Publicaciones P2P adicionales
+INSERT INTO publicaciones_p2p (usuario_id, titulo, descripcion, nivel_esfuerzo, tipo_item, imagen_url, estado, creado_en) VALUES
+  (5,  'Horno a Convección',                 'Funciona perfecto, 6 meses de uso con factura.',              'MEDIO',  'OBJETO',   NULL, 'Activo', CURRENT_TIMESTAMP - INTERVAL '3 days'),
+  (6,  'Ayuda con Mudanza (Mercado a Domicilio)', '2 personas disponibles este fin de semana.',           'ALTO',   'SERVICIO', NULL, 'Activo', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+  (7,  'Colección de Revistas de Ciencia',    'Revistas para fanáticos de la ciencia, lote x15.',           'SIMPLE', 'OBJETO',   NULL, 'Activo', CURRENT_TIMESTAMP - INTERVAL '5 days'),
+  (8,  'Clases de Inglés Básico',             'Nivel principiante, 10 clases presenciales por semana.',     'ALTO',   'SERVICIO', NULL, 'Activo', CURRENT_TIMESTAMP - INTERVAL '8 days'),
+  (9,  'Set de Herramientas Manuales',        'Martillo, destornilladores y llaves en estuche.',             'SIMPLE', 'OBJETO',   NULL, 'Activo', CURRENT_TIMESTAMP - INTERVAL '11 days'),
+  (10, 'Soporte Técnico a Domicilio',         'Instalo routers, armo redes y resuelvo problemas de PC.',     'ALTO',   'SERVICIO', NULL, 'Activo', CURRENT_TIMESTAMP - INTERVAL '14 days'),
+  (11, 'Juegos de Mesa para Niños',           'Lote de 6 juegos de mesa en excelente estado.',               'SIMPLE', 'OBJETO',   NULL, 'Activo', CURRENT_TIMESTAMP - INTERVAL '3 days'),
+  (12, 'Microondas',                          'Funciona bien, solo se le borró un botón de la perilla.',     'MEDIO',  'OBJETO',   NULL, 'Activo', CURRENT_TIMESTAMP - INTERVAL '2 days');
+
+-- 14. Pedidos de ayuda adicionales (cupos) para que las instituciones tengan
+--     varias necesidades activas y se pruebe la elección por QR.
+INSERT INTO cupos_necesidad (institucion_id, titulo, descripcion, prioridad, cupo_maximo, cupo_actual, activo) VALUES
+  (1, 'Frutas y Verduras para la Merienda',   'Necesitamos frutas de estación para complementar la merienda de los niños.', 'GENERAL', 25, 6, TRUE),
+  (1, 'Acompañamiento en Taller de Cocina',   'Voluntarios para cocinar viandas los jueves de 9 a 12 hs.',              'PRIORITARIA', 4, 1, TRUE),
+  (2, 'Acompañamiento a Personas Mayores',    'Charlas y compañía para los residentes del hogar, 2 horas a la semana.',  'GENERAL', 8, 2, TRUE),
+  (2, 'Donación de Ropa de Abrigo',           'Camperas, mantas y calzado en buen estado para el invierno.',             'URGENTE', 30, 12, TRUE),
+  (3, 'Ordenación y Clasificación de Libros', 'Ayuda para inventariar y ordenar la biblioteca los sábados.',              'GENERAL', 3, 0, TRUE),
+  (3, 'Taller de Informática Básica',         'Dictar clases de computación para adultos mayores.',                       'PRIORITARIA', 5, 2, TRUE),
+  (1, 'Limpieza y Desmalezado del Patio',     'Tareas de limpieza del patio comunitario y mantenimiento general.',        'GENERAL', 6, 0, TRUE);
+
+-- 15. Intercambios adicionales (llena el gráfico mensual y sube "Trueques del mes")
+INSERT INTO intercambios (publicacion_deseada_id, titulo_deseado, dueno_id, ofertante_id, ofertante_nombre, items_ofrecidos, estado, confirmacion_dueno, confirmacion_ofertante, creado_en) VALUES
+  (5, 'Libros Infantiles (lote x10)',          5, 6, 'Diego Martínez',   '[{"id": "6", "titulo": "Ayuda con Mudanza"}]'::jsonb,     'COMPLETADO', TRUE, TRUE,  DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '5 months' + INTERVAL '10 days'),
+  (1, 'Cochecito de Bebé Plegable',            7, 8, 'Joaquín Romero',   '[{"id": "8", "titulo": "Clases de Inglés"}]'::jsonb,       'COMPLETADO', TRUE, TRUE,  DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '5 months' + INTERVAL '22 days'),
+  (6, 'Horno a Convección',                    6, 9, 'Camila Díaz',      '[{"id": "9", "titulo": "Herramientas"}]'::jsonb,           'COMPLETADO', TRUE, TRUE,  DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '4 months' + INTERVAL '12 days'),
+  (10,'Soporte Técnico a Domicilio',           10, 5, 'Laura Fernández', '[{"id": "5", "titulo": "Libros Infantiles"}]'::jsonb,      'ACEPTADA',   FALSE, FALSE, DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '4 months' + INTERVAL '25 days'),
+  (8, 'Clases de Inglés Básico',               8, 11, 'Nicolás Álvarez', '[{"id": "11", "titulo": "Juegos de Mesa"}]'::jsonb,         'COMPLETADO', TRUE, TRUE,  DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '3 months' + INTERVAL '8 days'),
+  (3, 'Bicicleta Rodado 26',                   3, 9, 'Camila Díaz',      '[{"id": "9", "titulo": "Herramientas"}]'::jsonb,           'RECHAZADA',  FALSE, FALSE, DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '3 months' + INTERVAL '19 days'),
+  (7, 'Colección de Revistas de Ciencia',      7, 12, 'Camila Díaz',     '[{"id": "12", "titulo": "Microondas"}]'::jsonb,            'COMPLETADO', TRUE, TRUE,  DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '2 months' + INTERVAL '14 days'),
+  (2, 'Clases de Apoyo Escolar',               2, 6, 'Diego Martínez',   '[{"id": "6", "titulo": "Ayuda con Mudanza"}]'::jsonb,      'ACEPTADA',   FALSE, FALSE, DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '2 months' + INTERVAL '26 days'),
+  (9, 'Set de Herramientas Manuales',          9, 5, 'Laura Fernández', '[{"id": "5", "titulo": "Libros Infantiles"}]'::jsonb,      'COMPLETADO', TRUE, TRUE,  DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '1 month' + INTERVAL '6 days'),
+  (4, 'Reparación de PC / Laptop',             2, 10, 'Valentina Sosa',  '[{"id": "10", "titulo": "Soporte Técnico"}]'::jsonb,       'PENDIENTE',  FALSE, FALSE, DATE_TRUNC('month', CURRENT_TIMESTAMP) - INTERVAL '1 month' + INTERVAL '18 days'),
+  (11,'Juegos de Mesa para Niños',             11, 7, 'Sofía López',     '[{"id": "7", "titulo": "Revistas de Ciencia"}]'::jsonb,    'ACEPTADA',   FALSE, FALSE, CURRENT_TIMESTAMP - INTERVAL '12 days'),
+  (1, 'Cochecito de Bebé Plegable',            1, 8, 'Joaquín Romero',   '[{"id": "8", "titulo": "Clases de Inglés"}]'::jsonb,       'PENDIENTE',  FALSE, FALSE, CURRENT_TIMESTAMP - INTERVAL '9 days'),
+  (8, 'Clases de Inglés Básico',               8, 6, 'Diego Martínez',   '[{"id": "6", "titulo": "Mudanza"}]'::jsonb,                 'COMPLETADO', TRUE, FALSE, CURRENT_TIMESTAMP - INTERVAL '6 days'),
+  (6, 'Horno a Convección',                    6, 3, 'María Gómez',      '[{"id": "3", "titulo": "Bicicleta"}]'::jsonb,              'ACEPTADA',   FALSE, FALSE, CURRENT_TIMESTAMP - INTERVAL '4 days'),
+  (7, 'Revistas de Ciencia',                   7, 1, 'Guillermina Valdez', '[{"id": "1", "titulo": "Cochecito"}]'::jsonb,              'PENDIENTE',  FALSE, FALSE, CURRENT_TIMESTAMP - INTERVAL '2 days'),
+  (10,'Soporte Técnico a Domicilio',           10, 2, 'Carlos Rodríguez','[{"id": "2", "titulo": "Clases de Apoyo"}]'::jsonb,        'ACEPTADA',   FALSE, FALSE, CURRENT_TIMESTAMP - INTERVAL '1 day');
+
+-- 16. Reportes adicionales (variedad de estados para el panel)
+INSERT INTO reportes (reportante_id, reportante_nombre, reportado_id, reportado_nombre, motivo, estado, creado_en) VALUES
+  ('5',  'Laura Fernández',   '6',  'Diego Martínez',  'Acordamos un trueque y nunca respondió los mensajes después del visto bueno.', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '3 hours'),
+  ('6',  'Diego Martínez',   NULL, '',                 'Inconveniente general de la plataforma al subir una imagen de la publicación.', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '5 hours'),
+  ('8',  'Joaquín Romero',   '9',  'Camila Díaz',      'Señala que la herramienta entregada estaba incompleta respecto a lo ofrecido.', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+  ('11', 'Nicolás Álvarez',  '1',  'Guillermina Valdez', 'Descartado: fue un malentendido entre ambas partes, ya se resolvió.', 'DESESTIMADO', CURRENT_TIMESTAMP - INTERVAL '4 days'),
+  ('2',  'Carlos Rodríguez', '10', 'Valentina Sosa',   'Reporte resuelto: se aplicó suspensión temporal de 7 días por conducta.', 'RESUELTO_SUSPENSION', CURRENT_TIMESTAMP - INTERVAL '6 days'),
+  ('12', 'Nicolás Álvarez',  '9',  'Camila Díaz',      'Doble reporte: conducta repetida de no entregar lo pactado.', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '2 hours');
+
+-- 17. Sugerencias de esfuerzo pendientes (sección 3 del panel)
+INSERT INTO sugerencias_esfuerzo (publicacion_id, usuario_id, nivel_sugerido, estado, creado_en) VALUES
+  (5, 2, 'MEDIO', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+  (1, 3, 'ALTO',  'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+  (3, 1, 'SIMPLE','PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '6 hours'),
+  (4, 5, 'MEDIO', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '3 hours'),
+  (2, 7, 'MEDIO', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '1 hour');
+
+-- 18. Reajustar las secuencias tras los inserts con ID explícito
+SELECT setval('usuarios_id_seq', (SELECT MAX(id) FROM usuarios));
+SELECT setval('instituciones_id_seq', (SELECT MAX(id) FROM instituciones));
+SELECT setval('cupos_necesidad_id_seq', (SELECT MAX(id) FROM cupos_necesidad));
+SELECT setval('nexos_sociales_id_seq', (SELECT MAX(id) FROM nexos_sociales));
+SELECT setval('publicaciones_p2p_id_seq', (SELECT MAX(id) FROM publicaciones_p2p));
+SELECT setval('mensajes_chat_id_seq', (SELECT MAX(id) FROM mensajes_chat));
+SELECT setval('reportes_id_seq', (SELECT MAX(id) FROM reportes));
+SELECT setval('intercambios_id_seq', (SELECT MAX(id) FROM intercambios));
+SELECT setval('resenas_id_seq', (SELECT MAX(id) FROM resenas));
+SELECT setval('sugerencias_esfuerzo_id_seq', (SELECT MAX(id) FROM sugerencias_esfuerzo));
