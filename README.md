@@ -18,15 +18,13 @@ Switch es una plataforma que conecta a los vecinos de una ciudad con las institu
 |:---:|:---:|:---:|
 | ![Accesibilidad](docs/screenshots/accesibilidad.jpg) | ![Admin](docs/screenshots/admin.jpg) | ![Chat](docs/screenshots/chat.jpg) |
 
-> Las 3 capturas del panel de administración cubren el dashboard, las estadísticas y las sugerencias de esfuerzo. Solo falta la captura de **Chat**: cuando la tengas, agregala como `docs/screenshots/chat.jpg` y sumala a las tablas de arriba.
-
 ---
 
 ## Tecnologías
 
 | Capa | Tecnología |
 |---|---|
-| App móvil | Flutter (Dart), Material 3 |
+| App móvil | Flutter (Dart)|
 | Backend | Node.js + Express (API REST) |
 | Base de datos | PostgreSQL |
 | Autenticación | JWT (JSON Web Tokens) + bcrypt |
@@ -39,7 +37,7 @@ Switch es una plataforma que conecta a los vecinos de una ciudad con las institu
 - **Voluntariado verificado**: las instituciones publican sus necesidades con prioridad (General / Prioritaria / Urgente). El vecino coordina por chat, se presenta y **escanea el QR físico de la institución** para activar su *Nexo Social*.
 - **Vigencia inteligente del Nexo Social**: los días de validez se calculan según la urgencia de la necesidad (General 45 / Prioritaria 75 / Urgente 105 días base; 60 si la visita no apunta a una necesidad concreta), el esfuerzo estimado de la tarea (Medio +15 / Alto +30) y el nivel comunitario del voluntario (nivel 3 +30, 4 +60, 5 +120).
 - **Catálogo P2P**: publicación de objetos y servicios con **clasificación automática de esfuerzo** (el backend analiza título y descripción), búsqueda, filtros y propuestas de trueque multi-ítem.
-- **Gamificación**: niveles de comunidad — *Semilla del Barrio → Brote Activo → Vecino Confiable → Motor Solidario → Pilar de la Comunidad* — con puntos e insignias, incluidas **insignias secretas** (Pionero, Madrugador).
+- **Gamificación**: niveles de comunidad — *Semilla del Barrio → Brote Activo → Vecino Confiable → Motor Solidario → Pilar de la Comunidad* — con puntos e insignias, incluidas **insignias secretas**.
 - **Recompensas de comunidad**: las publicaciones de vecinos nivel 4+ se destacan en el catálogo.
 - **Chat integrado** entre vecinos y con instituciones, sistema de reportes y reseñas.
 - **Panel de administración**: métricas de la red (usuarios activos, trueques del mes, voluntariados QR, tasa de eficacia), moderación de reportes (desestimar, suspender, dar de baja) y gestión de **sugerencias de esfuerzo** que la comunidad reporta cuando el nivel estimado de una publicación no coincide con la realidad.
@@ -51,7 +49,7 @@ Switch es una plataforma que conecta a los vecinos de una ciudad con las institu
 
 App Flutter → capa de servicios Dart (`ApiService`) → API REST Express (`/api`) → controladores → modelos → PostgreSQL.
 
-El detalle completo (contexto, contenedores, despliegue, casos de uso, ER, secuencias, estados y mapa de endpoints) está en [`diagramas_mermaid_srs.md`](diagramas_mermaid_srs.md).
+El detalle (diagrama de contexto, casos de uso y modelo entidad-relación con las 10 tablas) está en [`diagramas_mermaid_srs.md`](diagramas_mermaid_srs.md).
 
 ## Diagrama de clases (backend)
 
@@ -183,7 +181,7 @@ classDiagram
 
 Los nombres y métodos reflejan los `module.exports` reales de `backend/src/controllers/` y `backend/src/models/`. Nota: `requerirSesion` y `requerirAdmin` viven en `backend/src/middlewares/auth.js`, no en un controller.
 
-Los controladores son finos: validan entrada y delegan en los modelos, que encapsulan todo el SQL. Los middlewares (`auth.js` protege rutas con JWT, `errorHandler.js` centraliza errores, `asyncWrapper.js` evita try/catch repetido) atraviesan todas las capas.
+Los controladores son finos: validan entrada y delegan en los modelos, que encapsulan todo el SQL. Los middlewares atraviesan todas las capas: `auth.js` protege rutas con JWT, `errorHandler.js` centraliza errores, `asyncWrapper.js` evita try/catch repetidos.
 
 ---
 
@@ -265,8 +263,6 @@ flutter analyze     # 0 errores, 0 warnings
 | `test/admin_dashboard_repro_test.dart` | Panel admin con datos reales: evita `BoxConstraints forces an infinite width` y desbordes de `Row` a **384 dp** (la resolución lógica de un teléfono común) con los 4 temas y escala de texto 1.0 y 1.5. |
 | `test/admin_flow_repro_test.dart` | Flujo completo sobre `SwitchApp` real: login de vecino, paletas, escala 1.5 y teclado sin desbordes. |
 
-> El caso de `admin_dashboard_repro_test.dart` es una regresión real: reproduce el crash que dejaba el panel en blanco, porque `AppTheme` define `minimumSize: Size(double.infinity, N)` en sus cuatro temas y dentro de un `Row` o `Wrap` el ancho infinito revienta el layout. Los botones que viven en un `Row`/`Wrap` deben acotar su `minimumSize`.
-
 ## Usuarios del seed
 
 Todos los vecinos y delegados del seed comparten la contraseña `clave123`; el administrador tiene la suya.
@@ -286,13 +282,7 @@ Todos los vecinos y delegados del seed comparten la contraseña `clave123`; el a
 | 11 | Vecina | `35555667` | Camila Díaz | `clave123` |
 | 12 | Delegado | `31888999` | Nicolás Álvarez | `clave123` |
 
-Datos calculados del seed, no inventados:
-
-- **El seed crea 12 usuarios** (2 vecinos de ejemplo, 1 delegada, 1 administrador y 8 vecinos/delegados más) y les da **Nexo Social activo a 9 de ellos**: los IDs 1, 5, 6, 7, 8, 9, 10, 11 y 12. Los IDs 2 (Carlos), 3 (María) y 4 (Admin) **no tienen nexo**, así que no pueden publicar en el catálogo hasta validar el QR de una institución o que un delegado lo apruebe.
-- **Guillermina (ID 1)** tiene nexo activo con el Comedor El Sol (`QR_GPS`) y es dueña de 2 publicaciones del catálogo. Sus 4 trueques completados, 1 voluntariado y 4 reseñas (promedio 4,75) le dan **64 puntos = nivel 2 "Brote Activo"** según la fórmula real de `backend/src/utils/gamificacion.js` (10 pts por trueque + 15 por voluntariado + 9 de bonus de reputación, `min(10, (promedio - 3) × 5)`). El nivel 3 arranca en 100 puntos, así que le faltan 36.
-- **El seed incluye una conversación de ejemplo entre Guillermina y Carlos**. No hay pantalla de lista de chats: se entra desde el detalle de una publicación o desde una institución. Para verla, entrá con Carlos (`35123456`) y abrí *"Cochecito de Bebé Plegable"* (de Guillermina), o entrá con Guillermina y abrí *"Clases de Apoyo Escolar en Matemática"* (de Carlos).
-
-Los hashes QR de las instituciones del seed están en `seed.sql` (ej: `QR_HASH_COMEDOR_ELSOL_2026`).
+Los hashes QR de las instituciones del seed están en `seed.sql`.
 
 ## Estructura del proyecto
 
@@ -327,4 +317,4 @@ switch/
 
 ## Documentación adicional
 
-- [Diagramas Mermaid del SRS](diagramas_mermaid_srs.md): contexto, contenedores, despliegue, casos de uso, modelo ER, secuencias (login, voluntariado con QR, trueque P2P, chat/moderación), máquinas de estados y mapa completo de endpoints REST.
+- [Diagramas Mermaid](diagramas_mermaid_srs.md): diagrama de contexto, casos de uso agrupados por funcionalidad y modelo entidad-relación.
