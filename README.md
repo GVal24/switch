@@ -14,9 +14,9 @@ Switch es una plataforma que conecta a los vecinos de una ciudad con las institu
 |:---:|:---:|:---:|
 | ![Voluntariado](docs/screenshots/voluntariado.jpg) | ![Catálogo](docs/screenshots/catalogo.jpg) | ![Perfil](docs/screenshots/perfil.jpg) |
 
-| Accesibilidad | Panel admin | Panel admin | Panel admin |
-|:---:|:---:|:---:|:---:|
-| ![Accesibilidad](docs/screenshots/accesibilidad.jpg) | ![Admin](docs/screenshots/Admin.jpg) | ![Admin estadisticas](docs/screenshots/Admin2.jpg) | ![Admin sugerencias](docs/screenshots/Admin3.jpg) |
+| Accesibilidad | Panel admin | Panel chat | 
+|:---:|:---:|:---:|
+| ![Accesibilidad](docs/screenshots/accesibilidad.jpg) | ![Admin](docs/screenshots/admin.jpg) | ![Chat](docs/screenshots/chat.jpg) |
 
 > Las 3 capturas del panel de administración cubren el dashboard, las estadísticas y las sugerencias de esfuerzo. Solo falta la captura de **Chat**: cuando la tengas, agregala como `docs/screenshots/chat.jpg` y sumala a las tablas de arriba.
 
