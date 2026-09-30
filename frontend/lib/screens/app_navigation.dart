@@ -43,8 +43,10 @@ class _AppNavigationState extends State<AppNavigation> {
   }
 
   void _verificarEstadoAdmin() {
-    if (widget.usuarioActual != null && widget.usuarioActual!['rol'] == 'ADMIN') {
-      _adminAutenticado = true;
+    final bool esAdmin =
+        widget.usuarioActual != null && widget.usuarioActual!['rol'] == 'ADMIN';
+    if (_adminAutenticado != esAdmin) {
+      setState(() => _adminAutenticado = esAdmin);
     }
   }
 
@@ -70,43 +72,53 @@ class _AppNavigationState extends State<AppNavigation> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setStateDialog) => AlertDialog(
-          backgroundColor: const Color(0xFF1a1a2e),
-          title: const Text('Acceso Admin',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        builder: (ctx, setStateDialog) {
+          final bool esPaletaClara = Theme.of(ctx).brightness == Brightness.light;
+          final Color colorFondo = esPaletaClara ? const Color(0xFFF6F3EE) : const Color(0xFF1a1a2e);
+          final Color colorTexto = esPaletaClara ? const Color(0xFF4A4A45) : Colors.white;
+          final Color colorSubtitulo = esPaletaClara ? const Color(0xFF8A877E) : const Color(0xFF888888);
+          return AlertDialog(
+          scrollable: true,
+          backgroundColor: colorFondo,
+          title: Text('Acceso Admin',
+              style: TextStyle(color: colorTexto, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Ingresá con tu cuenta de administración (DNI y contraseña).',
-                style: TextStyle(color: Color(0xFF888888), fontSize: 13),
+                style: TextStyle(color: colorSubtitulo, fontSize: 13),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: usuarioController,
                 keyboardType: TextInputType.number,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
+                style: TextStyle(color: colorTexto),
+                cursorColor: colorTexto,
+                decoration: InputDecoration(
+                  filled: false,
                   labelText: 'DNI',
-                  labelStyle: TextStyle(color: Color(0xFF888888)),
+                  labelStyle: TextStyle(color: colorSubtitulo),
                   enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF888888))),
+                      borderSide: BorderSide(color: colorSubtitulo)),
                   focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white)),
+                      borderSide: BorderSide(color: colorTexto)),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: contraController,
                 obscureText: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
+                style: TextStyle(color: colorTexto),
+                cursorColor: colorTexto,
+                decoration: InputDecoration(
+                  filled: false,
                   labelText: 'Contraseña',
-                  labelStyle: TextStyle(color: Color(0xFF888888)),
+                  labelStyle: TextStyle(color: colorSubtitulo),
                   enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF888888))),
+                      borderSide: BorderSide(color: colorSubtitulo)),
                   focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white)),
+                      borderSide: BorderSide(color: colorTexto)),
                 ),
               ),
             ],
@@ -114,7 +126,7 @@ class _AppNavigationState extends State<AppNavigation> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('CANCELAR', style: TextStyle(color: Color(0xFF888888))),
+              child: Text('CANCELAR', style: TextStyle(color: colorSubtitulo)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4CAF50)),
@@ -122,7 +134,7 @@ class _AppNavigationState extends State<AppNavigation> {
                   ? null
                   : () async {
                       setStateDialog(() => ingresando = true);
-                      final res = await ApiService.iniciarSesion(
+                      final res = await ApiService.iniciarSesionAdmin(
                         dni: usuarioController.text.trim(),
                         password: contraController.text,
                       );
@@ -133,9 +145,6 @@ class _AppNavigationState extends State<AppNavigation> {
                           _adminAutenticado = true;
                           _indiceActual = 4;
                         });
-                        if (widget.onSesionCambiada != null) {
-                          widget.onSesionCambiada!(res['usuario']);
-                        }
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                               content: Text('¡Acceso Admin Concedido!'),
@@ -161,7 +170,8 @@ class _AppNavigationState extends State<AppNavigation> {
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
-        ),
+        );
+        },
       ),
     );
   }

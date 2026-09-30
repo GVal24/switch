@@ -7,7 +7,14 @@ import 'services/accesibilidad_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final sesionGuardada = await ApiService.obtenerSesionGuardada();
+  var sesionGuardada = await ApiService.obtenerSesionGuardada();
+  // El admin NO se restaura como sesión "de vecino": si quedó persistida
+  // (login admin del diálogo), se descarta para que la app arranque limpia
+  // y el acceso admin se haga siempre por el botón "Acceso Administración".
+  if (sesionGuardada != null && sesionGuardada['rol'] == 'ADMIN') {
+    await ApiService.cerrarSesion();
+    sesionGuardada = null;
+  }
   await AccesibilidadService.instancia.cargar();
   runApp(SwitchApp(sesionInicial: sesionGuardada));
 }

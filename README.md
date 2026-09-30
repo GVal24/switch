@@ -14,9 +14,11 @@ Switch es una plataforma que conecta a los vecinos de una ciudad con las institu
 |:---:|:---:|:---:|
 | ![Voluntariado](docs/screenshots/voluntariado.jpg) | ![Catálogo](docs/screenshots/catalogo.jpg) | ![Perfil](docs/screenshots/perfil.jpg) |
 
-| Chat | Accesibilidad | Panel de administrador |
-|:---:|:---:|:---:|
-| ![Chat](docs/screenshots/chat.jpg) | ![Accesibilidad](docs/screenshots/accesibilidad.jpg) | ![Admin](docs/screenshots/admin.jpg) |
+| Accesibilidad | Panel admin | Panel admin | Panel admin |
+|:---:|:---:|:---:|:---:|
+| ![Accesibilidad](docs/screenshots/accesibilidad.jpg) | ![Admin](docs/screenshots/Admin.jpg) | ![Admin estadisticas](docs/screenshots/Admin2.jpg) | ![Admin sugerencias](docs/screenshots/Admin3.jpg) |
+
+> Las 3 capturas del panel de administración cubren el dashboard, las estadísticas y las sugerencias de esfuerzo. Solo falta la captura de **Chat**: cuando la tengas, agregala como `docs/screenshots/chat.jpg` y sumala a las tablas de arriba.
 
 ---
 
@@ -35,12 +37,12 @@ Switch es una plataforma que conecta a los vecinos de una ciudad con las institu
 ## Funcionalidades principales
 
 - **Voluntariado verificado**: las instituciones publican sus necesidades con prioridad (General / Prioritaria / Urgente). El vecino coordina por chat, se presenta y **escanea el QR físico de la institución** para activar su *Nexo Social*.
-- **Vigencia inteligente del Nexo Social**: los días de validez se calculan según la urgencia de la necesidad (45/75/105 días base), el esfuerzo estimado de la tarea (+15/+30) y el nivel comunitario del voluntario (+30/+60/+120).
+- **Vigencia inteligente del Nexo Social**: los días de validez se calculan según la urgencia de la necesidad (General 45 / Prioritaria 75 / Urgente 105 días base; 60 si la visita no apunta a una necesidad concreta), el esfuerzo estimado de la tarea (Medio +15 / Alto +30) y el nivel comunitario del voluntario (nivel 3 +30, 4 +60, 5 +120).
 - **Catálogo P2P**: publicación de objetos y servicios con **clasificación automática de esfuerzo** (el backend analiza título y descripción), búsqueda, filtros y propuestas de trueque multi-ítem.
 - **Gamificación**: niveles de comunidad — *Semilla del Barrio → Brote Activo → Vecino Confiable → Motor Solidario → Pilar de la Comunidad* — con puntos e insignias, incluidas **insignias secretas** (Pionero, Madrugador).
 - **Recompensas de comunidad**: las publicaciones de vecinos nivel 4+ se destacan en el catálogo.
 - **Chat integrado** entre vecinos y con instituciones, sistema de reportes y reseñas.
-- **Panel de administración**: métricas, moderación de reportes y gestión de publicaciones.
+- **Panel de administración**: métricas de la red (usuarios activos, trueques del mes, voluntariados QR, tasa de eficacia), moderación de reportes (desestimar, suspender, dar de baja) y gestión de **sugerencias de esfuerzo** que la comunidad reporta cuando el nivel estimado de una publicación no coincide con la realidad.
 - **Accesibilidad**: 4 paletas temáticas — estándar, vista accesible (texto grande), alto contraste y paleta suave (baja estimulación sensorial) — con factores dinámicos de texto e iconos.
 
 ---
@@ -58,86 +60,128 @@ classDiagram
     direction LR
 
     class AuthController {
-        +registrar(req, res)
-        +iniciarSesion(req, res)
+        +registrarUsuario(req, res)
+        +loginUsuario(req, res)
     }
     class AuthService {
         +generarToken(usuario) String
         +verificarToken(token) Payload
     }
     class InstController {
-        +listarInstituciones()
-        +validarPresenciaQR()
-        +registrarInstitucion()
+        +listarInstituciones(req, res)
+        +obtenerCuposAbiertos(req, res)
+        +validarPresenciaQR(req, res)
+        +registrarInstitucion(req, res)
     }
     class P2PController {
-        +listarCatalogo()
-        +crearPublicacion()
-        +subirImagen()
-        +sugerirEsfuerzo()
+        +listarCatalogoP2P(req, res)
+        +listarMisPublicaciones(req, res)
+        +previsualizarEsfuerzo(req, res)
+        +subirImagen(req, res)
+        +crearPublicacionP2P(req, res)
     }
     class IntercambioController {
-        +proponerSwitch()
-        +responderPropuesta()
-        +confirmarTrueque()
+        +proponerIntercambio(req, res)
+        +listarMisPropuestas(req, res)
+        +responderPropuesta(req, res)
+        +confirmarTrueque(req, res)
     }
     class ChatController {
-        +obtenerMensajes()
-        +enviarMensaje()
+        +obtenerMensajes(req, res)
+        +enviarMensaje(req, res)
+    }
+    class SugerenciaController {
+        +sugerirEsfuerzo(req, res)
+        +listarSugerencias(req, res)
+        +aplicarSugerencia(req, res)
+        +descartarSugerencia(req, res)
+    }
+    class ReporteController {
+        +reportarUsuario(req, res)
+        +listarReportes(req, res)
+        +desestimarReporte(req, res)
+        +darDeBajaUsuario(req, res)
+        +suspenderUsuario(req, res)
+    }
+    class UsuarioController {
+        +obtenerMiPerfil(req, res)
     }
     class AdminController {
-        +obtenerMetricas()
-        +revisarReportes()
+        +obtenerEstadisticasAdmin(req, res)
     }
 
     class UsuarioModel {
         +crear(datos)
-        +obtenerPorDni(dni)
+        +buscarPorDni(dni)
+        +buscarPorDniOTelefono(dni, telefono)
         +obtenerPerfilConEstadisticas(id)
+        +obtenerNombrePorId(id)
+        +suspender(id, dias)
+        +levantarSuspension(id)
+        +darDeBaja(id)
     }
     class InstitucionModel {
         +obtenerTodas()
-        +obtenerPorQrHash(hash)$
+        +obtenerPorId(id)
+        +obtenerPorQrHash(hash)
         +crearConNecesidades(datos)
-        +ofrecerseEnCupo(datos)
     }
     class P2PModel {
         +obtenerCatalogoDisponible(filtros)
+        +obtenerPorIds(ids)
+        +obtenerPublicacionesDeUsuario(id)
+        +crearPublicacion(datos)
+    }
+    class IntercambioModel {
         +crear(datos)
-        +actualizarEstado(id, estado)
+        +obtenerPorId(id)
+        +listarPorUsuario(id)
+        +responder(id, aceptada)
+        +confirmar(id, usuarioId)
     }
     class VoluntariadoModel {
         +registrarNexoSocial(datos) Vigencia
-        +obtenerHistorial(usuarioId)
+        +verificarNexoSocialActivo(usuarioId)
+        +obtenerCuposPorInstitucion(id)
     }
-    class ChatModel
-    class ReporteModel
-    class ResenaModel
-    class AdminModel
+    class ChatModel {
+        +crearMensaje(datos)
+        +obtenerConversacion(emisorId, receptorId)
+    }
+    class ResenaModel {
+        +crear(datos)
+    }
+    class ReporteModel {
+        +crear(datos)
+        +obtenerTodos()
+        +actualizarEstado(id, estado)
+    }
+    class SugerenciaModel {
+        +sugerir(datos)
+        +listarPendientes()
+        +aplicar(id)
+        +descartar(id)
+    }
+    class AdminModel {
+        +obtenerMetricasGlobales()
+    }
 
     class Gamificacion {
-        +evaluarImpacto(usuarioId)$ Impacto
-        +otorgarInsignias(usuarioId)$
+        +calcularImpacto(estadisticas) Impacto
+        +calcularBonus(estadisticas) Number
+        +NIVELES[]
+        +INSIGNIAS[]
+    }
+    class AuthMiddleware {
+        +requerirSesion(req, res, next)
+        +requerirAdmin(req, res, next)
     }
     class ClasificadorEsfuerzo {
-        +clasificarEsfuerzo(titulo, descripcion, tipo)$ Nivel
+        +clasificar(titulo, descripcion, tipo)
     }
-    class CustomErrors
-
-    AuthController --> AuthService
-    AuthController --> UsuarioModel
-    InstController --> InstitucionModel
-    InstController --> VoluntariadoModel
-    InstController --> Gamificacion
-    P2PController --> P2PModel
-    P2PController --> ClasificadorEsfuerzo
-    IntercambioController --> P2PModel
-    ChatController --> ChatModel
-    AdminController --> AdminModel
-    AdminController --> ReporteModel
-    Gamificacion --> ResenaModel
-    VoluntariadoModel ..> CustomErrors : valida GPS y cupos
 ```
+
+Los nombres y métodos reflejan los `module.exports` reales de `backend/src/controllers/` y `backend/src/models/`. Nota: `requerirSesion` y `requerirAdmin` viven en `backend/src/middlewares/auth.js`, no en un controller.
 
 Los controladores son finos: validan entrada y delegan en los modelos, que encapsulan todo el SQL. Los middlewares (`auth.js` protege rutas con JWT, `errorHandler.js` centraliza errores, `asyncWrapper.js` evita try/catch repetido) atraviesan todas las capas.
 
@@ -174,6 +218,7 @@ Variables de entorno:
 
 ```env
 PORT=3000
+NODE_ENV=development
 DB_USER=postgres
 DB_PASSWORD=tu_contraseña
 DB_HOST=localhost
@@ -203,39 +248,79 @@ npm install qrcode
 node scripts/generarQrs.js   # guarda los PNG en backend/qrs_instituciones/
 ```
 
+### 5. Pruebas
+
+Las pruebas son de widget (`flutter_test`) y no necesitan backend: interceptan el HTTP con `HttpOverrides` y fakean las respuestas de la API.
+
+```bash
+cd frontend
+flutter test        # 12 pruebas
+flutter analyze     # 0 errores, 0 warnings
+```
+
+| Archivo | Qué cubre |
+|---|---|
+| `test/accesibilidad_test.dart` | Navegación a Accesibilidad y uso de sus controles (escala, paletas). |
+| `test/admin_login_dialog_test.dart` | Diálogo de acceso administrativo con tema oscuro, paleta suave y teclado. |
+| `test/admin_dashboard_repro_test.dart` | Panel admin con datos reales: evita `BoxConstraints forces an infinite width` y desbordes de `Row` a **384 dp** (la resolución lógica de un teléfono común) con los 4 temas y escala de texto 1.0 y 1.5. |
+| `test/admin_flow_repro_test.dart` | Flujo completo sobre `SwitchApp` real: login de vecino, paletas, escala 1.5 y teclado sin desbordes. |
+
+> El caso de `admin_dashboard_repro_test.dart` es una regresión real: reproduce el crash que dejaba el panel en blanco, porque `AppTheme` define `minimumSize: Size(double.infinity, N)` en sus cuatro temas y dentro de un `Row` o `Wrap` el ancho infinito revienta el layout. Los botones que viven en un `Row`/`Wrap` deben acotar su `minimumSize`.
+
 ## Usuarios del seed
 
-| Rol | DNI | Contraseña |
-|---|---|---|
-| Vecina (nivel 3) | `38450912` | `clave123` |
-| Vecino | `35123456` | `clave123` |
-| Vecina | `28999888` | `clave123` |
-| Administrador | `11111111` | `Switch2024!` |
+Todos los vecinos y delegados del seed comparten la contraseña `clave123`; el administrador tiene la suya.
+
+| ID | Rol | DNI | Nombre | Contraseña |
+|---|---|---|---|---|
+| 1 | Vecina (nivel 2) | `38450912` | Guillermina Valdez | `clave123` |
+| 2 | Vecino | `35123456` | Carlos Rodríguez | `clave123` |
+| 3 | Delegada | `28999888` | María Gómez | `clave123` |
+| 4 | Administrador | `11111111` | Admin Switch | `Switch2024!` |
+| 5 | Vecina | `31222444` | Laura Fernández | `clave123` |
+| 6 | Vecino | `27333455` | Diego Martínez | `clave123` |
+| 7 | Delegada | `29888777` | Sofía López | `clave123` |
+| 8 | Vecino | `33555666` | Martín Pérez | `clave123` |
+| 9 | Vecina | `34119988` | Valentina Sosa | `clave123` |
+| 10 | Vecino | `30888999` | Joaquín Romero | `clave123` |
+| 11 | Vecina | `35555667` | Camila Díaz | `clave123` |
+| 12 | Delegado | `31888999` | Nicolás Álvarez | `clave123` |
+
+Datos calculados del seed, no inventados:
+
+- **El seed crea 12 usuarios** (2 vecinos de ejemplo, 1 delegada, 1 administrador y 8 vecinos/delegados más) y les da **Nexo Social activo a 9 de ellos**: los IDs 1, 5, 6, 7, 8, 9, 10, 11 y 12. Los IDs 2 (Carlos), 3 (María) y 4 (Admin) **no tienen nexo**, así que no pueden publicar en el catálogo hasta validar el QR de una institución o que un delegado lo apruebe.
+- **Guillermina (ID 1)** tiene nexo activo con el Comedor El Sol (`QR_GPS`) y es dueña de 2 publicaciones del catálogo. Sus 4 trueques completados, 1 voluntariado y 4 reseñas (promedio 4,75) le dan **64 puntos = nivel 2 "Brote Activo"** según la fórmula real de `backend/src/utils/gamificacion.js` (10 pts por trueque + 15 por voluntariado + 9 de bonus de reputación, `min(10, (promedio - 3) × 5)`). El nivel 3 arranca en 100 puntos, así que le faltan 36.
+- **El seed incluye una conversación de ejemplo entre Guillermina y Carlos**. No hay pantalla de lista de chats: se entra desde el detalle de una publicación o desde una institución. Para verla, entrá con Carlos (`35123456`) y abrí *"Cochecito de Bebé Plegable"* (de Guillermina), o entrá con Guillermina y abrí *"Clases de Apoyo Escolar en Matemática"* (de Carlos).
 
 Los hashes QR de las instituciones del seed están en `seed.sql` (ej: `QR_HASH_COMEDOR_ELSOL_2026`).
 
 ## Estructura del proyecto
 
 ```
-App/
+switch/
 ├── backend/
 │   ├── src/
 │   │   ├── config/          # Conexión a PostgreSQL
-│   │   ├── controllers/     # Capa HTTP (auth, instituciones, P2P, chat, admin…)
+│   │   ├── controllers/     # Capa HTTP (auth, instituciones, P2P, intercambio, chat, reportes, admin…)
 │   │   ├── middlewares/     # JWT, manejo de errores, asyncWrapper
 │   │   ├── models/          # Acceso a datos (SQL)
-│   │   ├── routes/          # Definición de endpoints /api
+│   │   ├── routes/          # Definición de endpoints /api (index.js)
 │   │   ├── services/        # Lógica de tokens
 │   │   └── utils/           # Gamificación, clasificador de esfuerzo, geo, errores
 │   ├── scripts/generarQrs.js
+│   ├── qrs_instituciones/   # PNG de los QR de presencia
+│   ├── qrs_print.html       # Hoja imprimible con los QR
 │   └── uploads/             # Imágenes publicadas
 ├── frontend/
-│   └── lib/
-│       ├── screens/         # Pantallas (voluntariado, catálogo, perfil, chat, admin…)
-│       ├── services/        # Consumo de la API y sensores (QR, GPS)
-│       ├── theme/           # Paletas y accesibilidad visual
-│       └── widgets/         # Componentes reutilizables (gráficos, logo)
-├── schema.sql               # DDL completo
+│   ├── lib/
+│   │   ├── screens/         # Pantallas (voluntariado, catálogo, perfil, chat, admin…)
+│   │   ├── services/        # Consumo de la API y sensores (QR, GPS)
+│   │   ├── theme/           # Paletas y accesibilidad visual
+│   │   ├── widgets/         # Componentes reutilizables (gráficos, logo)
+│   │   └── main.dart
+│   └── test/                # Pruebas de widget (12)
+├── docs/screenshots/        # Capturas usadas en el README
+├── schema.sql               # DDL completo (10 tablas)
 ├── seed.sql                 # Datos de ejemplo
 └── diagramas_mermaid_srs.md # UML completo del sistema
 ```

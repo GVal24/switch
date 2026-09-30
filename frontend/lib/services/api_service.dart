@@ -34,6 +34,12 @@ class ApiService {
   }) =>
       AuthService.iniciarSesion(dni: dni, password: password);
 
+  static Future<Map<String, dynamic>> iniciarSesionAdmin({
+    required String dni,
+    required String password,
+  }) =>
+      AuthService.iniciarSesionAdmin(dni: dni, password: password);
+
   static Future<Map<String, dynamic>> registrarUsuario({
     required String dni,
     required String nombre,

@@ -248,7 +248,14 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
           children: [
             LogoSwitchIsotipo(size: 34),
             SizedBox(width: 12),
-            Text('Voluntariado', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            Expanded(
+              child: Text(
+                'Voluntariado',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ),
           ],
         ),
         actions: [
@@ -315,11 +322,12 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                 ),
 
                 const SizedBox(height: 24),
-                Row(
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
-                    Expanded(
-                      child: Text('Instituciones Adheridas', style: theme.textTheme.headlineLarge),
-                    ),
+                    Text('Instituciones Adheridas', style: theme.textTheme.headlineLarge),
                     TextButton.icon(
                       onPressed: () async {
                         final registro = await Navigator.push(

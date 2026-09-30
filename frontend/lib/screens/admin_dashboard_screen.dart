@@ -299,7 +299,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                     ? (actividad[i] as num).toDouble()
                                     : 0.0;
                                 final proporcion = maxActividad == 0 ? 0.15 : (valor / maxActividad).clamp(0.15, 1.0);
-                                return _buildBarraGrafico(meses[i], proporcion, esAccesible);
+                                return Expanded(
+                                  child: _buildBarraGrafico(meses[i], proporcion, esAccesible),
+                                );
                               }),
                             ),
                         ],
@@ -341,12 +343,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               ),
                             ),
                           )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _reportes.length,
-                            itemBuilder: (ctx, idx) {
-                              final rep = _reportes[idx];
+                        : Column(
+                            children: _reportes.map<Widget>((rep) {
                               final estado = (rep['estado'] ?? '').toString();
                               final esPendiente = estado == 'PENDIENTE';
 
@@ -377,10 +375,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                               ),
                                             ),
                                           ),
-                                          Text(
-                                            (rep['creado_en'] ?? '').toString(),
-                                            style: TextStyle(
-                                                color: AppTheme.textoSecundario, fontSize: esAccesible ? 14 : 12),
+                                          Flexible(
+                                            child: Text(
+                                              (rep['creado_en'] ?? '').toString(),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.right,
+                                              style: TextStyle(
+                                                  color: AppTheme.textoSecundario, fontSize: esAccesible ? 14 : 12),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -434,6 +437,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                               ElevatedButton.icon(
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor: AppTheme.acentoNaranja,
+                                                  minimumSize: const Size(0, 40),
                                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                                 ),
                                                 onPressed: () => _suspenderUsuario(rep),
@@ -444,6 +448,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                               ElevatedButton.icon(
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor: Colors.red.shade800,
+                                                  minimumSize: const Size(0, 40),
                                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                                 ),
                                                 onPressed: () => _darDeBajaUsuario(rep),
@@ -461,15 +466,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                               onPressed: () => _desestimarReporte(rep),
                                               child: Text('Desestimar',
                                                   style: TextStyle(fontSize: esAccesible ? 14 : 12)),
-                                            ),
-                                          ],
-                                        ),
+),
+                                            ],
+                                          ),
+                                        ],
                                       ],
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                            }).toList(),
                           ),
                     const SizedBox(height: 28),
                     const Divider(color: Colors.white24),
@@ -506,12 +511,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               ),
                             ),
                           )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _sugerenciasEsfuerzo.length,
-                            itemBuilder: (ctx, idx) {
-                              final sug = _sugerenciasEsfuerzo[idx];
+                        : Column(
+                            children: _sugerenciasEsfuerzo.map<Widget>((sug) {
                               return Card(
                                 color: AppTheme.superficieTarjeta,
                                 margin: const EdgeInsets.only(bottom: 12),
@@ -551,35 +552,45 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                       const SizedBox(height: 12),
                                       Row(
                                         children: [
-                                          ElevatedButton.icon(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: AppTheme.acentoVerdeEco,
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          Expanded(
+                                            child: ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppTheme.acentoVerdeEco,
+                                                minimumSize: const Size(0, 40),
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                              ),
+                                              onPressed: () => _aplicarSugerencia(sug),
+                                              icon: Icon(Icons.check_rounded, size: esAccesible ? 20 : 16, color: Colors.black),
+                                              label: Text('Aplicar',
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      color: Colors.black, fontSize: esAccesible ? 14 : 12)),
                                             ),
-                                            onPressed: () => _aplicarSugerencia(sug),
-                                            icon: Icon(Icons.check_rounded, size: esAccesible ? 20 : 16, color: Colors.black),
-                                            label: Text('Aplicar',
-                                                style: TextStyle(
-                                                    color: Colors.black, fontSize: esAccesible ? 14 : 12)),
                                           ),
                                           const SizedBox(width: 8),
-                                          OutlinedButton(
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: Colors.grey,
-                                              side: const BorderSide(color: Colors.grey),
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: Colors.grey,
+                                                side: const BorderSide(color: Colors.grey),
+                                                minimumSize: const Size(0, 40),
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                              ),
+                                              onPressed: () => _descartarSugerencia(sug),
+                                              child: Text('Descartar',
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(fontSize: esAccesible ? 14 : 12)),
                                             ),
-                                            onPressed: () => _descartarSugerencia(sug),
-                                            child: Text('Descartar',
-                                                style: TextStyle(fontSize: esAccesible ? 14 : 12)),
                                           ),
                                         ],
                                       ),
                                     ],
                                   ),
-                                ),
-                              );
-                            },
+),
+                                );
+                            }).toList(),
                           ),
                   ],
                 ),
@@ -635,25 +646,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             Icon(icono, color: color, size: esAccesible ? 32 : 28),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  valor,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: esAccesible ? 22 : 18,
-                    fontWeight: FontWeight.bold,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    valor,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: esAccesible ? 22 : 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  titulo,
-                  style: TextStyle(
-                    color: AppTheme.textoSecundario,
-                    fontSize: esAccesible ? 13 : 11,
+                  Text(
+                    titulo,
+                    style: TextStyle(
+                      color: AppTheme.textoSecundario,
+                      fontSize: esAccesible ? 13 : 11,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -663,6 +676,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildBarraGrafico(String dia, double porcentaje, bool esAccesible) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           height: 90 * porcentaje,
@@ -675,6 +689,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         const SizedBox(height: 6),
         Text(
           dia,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
           style: TextStyle(
             color: AppTheme.textoSecundario,
             fontSize: esAccesible ? 13 : 11,

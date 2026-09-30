@@ -103,6 +103,51 @@ class AuthService {
     }
   }
 
+  // Login exclusivo del panel admin: valida credenciales y guarda el token,
+  // pero NO sobrescribe la sesión local del vecino activo.
+  static Future<Map<String, dynamic>> iniciarSesionAdmin({
+    required String dni,
+    required String password,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('${ApiService.baseUrl}/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'dni': dni, 'password': password}),
+      );
+
+      final decoded = jsonDecode(res.body);
+
+      if (res.statusCode == 200 && decoded['exito'] == true) {
+        final datos = decoded['datos'] ?? {};
+
+        final usuario = {
+          'id': datos['id'].toString(),
+          'dni': datos['dni'] ?? dni,
+          'nombre': datos['nombre'] ?? '',
+          'apellido': datos['apellido'] ?? '',
+          'nombreCompleto': '${datos['nombre'] ?? ''} ${datos['apellido'] ?? ''}'.trim(),
+          'telefono': datos['telefono'] ?? '',
+          'rol': datos['rol'] ?? 'VECINO',
+        };
+
+        final token = datos['token'];
+        if (token != null && token is String) {
+          await guardarToken(token);
+        }
+
+        return {'exito': true, 'mensaje': decoded['mensaje'], 'usuario': usuario};
+      }
+
+      return {
+        'exito': false,
+        'mensaje': decoded['mensaje'] ?? 'Credenciales incorrectas.',
+      };
+    } catch (e) {
+      return {'exito': false, 'mensaje': 'Error de conexión con el servidor.'};
+    }
+  }
+
   // ==========================================
   // REGISTRO contra la API real (POST /auth/registro)
   // ==========================================
