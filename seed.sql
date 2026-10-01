@@ -2,12 +2,29 @@
 -- PROYECTO SWITCH: DATOS DE PRUEBA E INICIALIZACIÓN (seed.sql)
 -- Requiere haber ejecutado schema.sql sobre una base vacía.
 --
+-- CUIDADO: este archivo empieza con TRUNCATE. Borra lo que haya en la base,
+-- así que no lo corras sobre una base con datos que quieras conservar.
+--
 -- Contraseñas de prueba:
 --   - Usuarios VECINO/DELEGADO => clave123
 --   - Usuario ADMIN            => Switch2024!
 -- ============================================================
 
-TRUNCATE TABLE sugerencias_esfuerzo, resenas, intercambios, reportes, mensajes_chat, publicaciones_p2p, nexos_sociales, cupos_necesidad, instituciones, usuarios RESTART IDENTITY CASCADE;
+TRUNCATE TABLE
+  sugerencias_esfuerzo,
+  resenas,
+  intercambios,
+  reportes,
+  mensajes_chat,
+  moderacion_imagenes,
+  mensajes_contacto,
+  verificaciones_otp,
+  publicaciones_p2p,
+  nexos_sociales,
+  cupos_necesidad,
+  instituciones,
+  usuarios
+RESTART IDENTITY CASCADE;
 
 -- 1. Usuarios (passwords hasheadas con bcrypt)
 INSERT INTO usuarios (id, dni, nombre, apellido, telefono, password, validado_mayor_edad, rol, activo) VALUES
@@ -109,7 +126,29 @@ INSERT INTO usuarios (dni, nombre, apellido, telefono, password, validado_mayor_
   ('34119988', 'Valentina',  'Sosa',      '2281998877', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
   ('30888999', 'Joaquín',    'Romero',    '2281445566', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
   ('35555667', 'Camila',     'Díaz',      '2281665544', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO',   TRUE),
-  ('31888999', 'Nicolás',    'Álvarez',   '2281789900', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'DELEGADO', TRUE);
+  ('31888999', 'Nicolás',    'Álvarez',   '2281789900', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'DELEGADO', TRUE),
+  -- Estas tres son para probar la pantalla de cuentas bloqueadas, que
+  -- muestra los tres casos por separado: penalizada, vencida y bloqueada.
+  -- Sólo la última no puede entrar; las otras dos sí, en modo lectura.
+  -- Sus DNIs empiezan con 80, la marca que usan los scripts de prueba para
+  -- no confundirse con la demo.
+  ('80990011', 'Lucía',      'Penalizada', '2281800111', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO', TRUE),
+  ('80990022', 'Pedro',      'Bloqueado',  '2281800222', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO', FALSE),
+  ('80990033', 'Ana',        'Vencida',    '2281800333', '$2b$10$X8zsNck2lcV7hSnWMkcYSuGHxl.uHQdkgU1etRjRgQc/QJ8zvH5r.', TRUE, 'VECINO', TRUE);
+
+-- 11b. Una penalización vigente y una ya vencida
+--       suspendido_hasta es una fecha: si ya pasó, la cuenta se levanta sola
+--       cuando esa persona entra. Ver authService.js. La cuenta bloqueada
+--       (activo = FALSE) no tiene fecha: esa la levanta un humano.
+UPDATE usuarios
+SET suspendido_hasta = CURRENT_TIMESTAMP + INTERVAL '5 days',
+    motivo_suspension = 'Posible imagen de menor en una publicación'
+WHERE dni = '80990011';
+
+UPDATE usuarios
+SET suspendido_hasta = CURRENT_TIMESTAMP - INTERVAL '1 day',
+    motivo_suspension = 'Penalización vencida: se levanta al entrar'
+WHERE dni = '80990033';
 
 -- 12. Nexos Sociales adicionales (sube "Asistencias QR")
 INSERT INTO nexos_sociales (usuario_id, cupo_necesidad_id, institucion_id, metodo_validacion, latitud_usuario, longitud_usuario, nivel_impacto, estado, fecha_activacion, fecha_expiracion) VALUES
@@ -169,7 +208,7 @@ INSERT INTO reportes (reportante_id, reportante_nombre, reportado_id, reportado_
   ('6',  'Diego Martínez',   NULL, '',                 'Inconveniente general de la plataforma al subir una imagen de la publicación.', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '5 hours'),
   ('8',  'Joaquín Romero',   '9',  'Camila Díaz',      'Señala que la herramienta entregada estaba incompleta respecto a lo ofrecido.', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '1 day'),
   ('11', 'Nicolás Álvarez',  '1',  'Guillermina Valdez', 'Descartado: fue un malentendido entre ambas partes, ya se resolvió.', 'DESESTIMADO', CURRENT_TIMESTAMP - INTERVAL '4 days'),
-  ('2',  'Carlos Rodríguez', '10', 'Valentina Sosa',   'Reporte resuelto: se aplicó suspensión temporal de 7 días por conducta.', 'RESUELTO_SUSPENSION', CURRENT_TIMESTAMP - INTERVAL '6 days'),
+  ('2',  'Carlos Rodríguez', '10', 'Valentina Sosa',   'Reporte cerrado: la suspensión de 7 días ya se cumplió y la cuenta quedó habilitada.', 'RESUELTO_SUSPENSION', CURRENT_TIMESTAMP - INTERVAL '6 days'),
   ('12', 'Nicolás Álvarez',  '9',  'Camila Díaz',      'Doble reporte: conducta repetida de no entregar lo pactado.', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '2 hours');
 
 -- 17. Sugerencias de esfuerzo pendientes (sección 3 del panel)
@@ -180,7 +219,45 @@ INSERT INTO sugerencias_esfuerzo (publicacion_id, usuario_id, nivel_sugerido, es
   (4, 5, 'MEDIO', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '3 hours'),
   (2, 7, 'MEDIO', 'PENDIENTE', CURRENT_TIMESTAMP - INTERVAL '1 hour');
 
--- 18. Reajustar las secuencias tras los inserts con ID explícito
+-- ============================================================
+-- DATOS PARA PROBAR LA MODERACIÓN DE IMÁGENES Y EL BUZÓN
+-- (si el seed no trae esto, esas dos pantallas arrancan vacías)
+-- ============================================================
+
+-- 19. Una publicación esperando revisión humana
+--     'PENDIENTE_REVISION' es el estado que usa el backend: la publicación no
+--     aparece en el catálogo público hasta que una persona la apruebe.
+INSERT INTO publicaciones_p2p (usuario_id, titulo, descripcion, nivel_esfuerzo, tipo_item, imagen_url, estado, creado_en) VALUES
+  (13, 'Mesa Plegable de Madera', 'Publicada con foto, quedó esperando que alguien la mire.', 'SIMPLE', 'OBJETO', 'uploads/demo/mesa-plegable.jpg', 'PENDIENTE_REVISION', CURRENT_TIMESTAMP - INTERVAL '3 hours');
+
+-- 20. La imagen que se está revisando
+--     filtro_estado va en PENDIENTE y decision en NULL: eso es exactamente lo
+--     que la cola de moderación muestra. La segunda fila ya está resuelta, para
+--     que se vea también el histórico.
+INSERT INTO moderacion_imagenes (publicacion_id, usuario_id, nombre_archivo, mime_detectado, peso_bytes, filtro_estado, filtro_puntaje, filtro_motivos, revisado_por, revisado_en, decision, motivo_rechazo, contiene_menor, creado_en) VALUES
+  ((SELECT MAX(id) FROM publicaciones_p2p), 13, 'mesa-plegable.jpg', 'image/jpeg', 284120, 'PENDIENTE', 12, '["persona en primer plano"]'::jsonb, NULL, NULL, NULL, NULL, FALSE, CURRENT_TIMESTAMP - INTERVAL '3 hours'),
+  ((SELECT MAX(id) - 1 FROM publicaciones_p2p), 5, 'cochecito-2.jpg', 'image/jpeg', 402118, 'RECHAZADA_TECNICAMENTE', 74, '["formato no esperado","resolucion baja"]'::jsonb, 4, CURRENT_TIMESTAMP - INTERVAL '2 days', 'RECHAZADA', 'La imagen no se distingue de una foto de una persona menor.', TRUE, CURRENT_TIMESTAMP - INTERVAL '3 days');
+
+-- 21. Buzón de contacto: dos sin responder y uno ya contestado
+--     Los que tienen usuario_id NULL son los que escribió alguien sin sesión:
+--     se guardan igual, con el nombre que puso en el formulario.
+INSERT INTO mensajes_contacto (usuario_id, autor_nombre, autor_dni, autor_telefono, asunto, mensaje, respuesta, respondido_por, respondido_en, leido, creado_en) VALUES
+  (2,  'Carlos Rodríguez',  '35123456', '2281506070', 'PREGUNTA',   '¿El intercambio de la heladera sigue en pie? La otra persona no me contesta desde ayer.', NULL, NULL, NULL, FALSE, CURRENT_TIMESTAMP - INTERVAL '40 minutes'),
+  (NULL, 'Visitante del sitio', NULL,    NULL,         'CONTACTO',  'Quiero saber si puedo usar la plataforma siendo de otro barrio.', NULL, NULL, NULL, FALSE, CURRENT_TIMESTAMP - INTERVAL '5 hours'),
+  (5,  'Laura Fernández',    '31222444', '2281334455', 'COMENTARIO', 'El buscador del catálogo va muy bien, sólo falta filtrar por institución.', '¡Gracias por avisar! Lo anotamos para la próxima versión.', 4, CURRENT_TIMESTAMP - INTERVAL '1 day', TRUE, CURRENT_TIMESTAMP - INTERVAL '2 days');
+
+-- 22. Aceptación de los textos legales de la demo
+--     El hash es el que devuelve GET /legal/terminos, así que la constancia
+--     coincide con el documento que la persona vio. Si cambia el texto legal,
+--     hay que recalcularlo con hashDocumento('terminos') y actualizar acá.
+INSERT INTO aceptaciones_legales (usuario_id, documento, version, hash_documento, ip_origen, user_agent, aceptado_en) VALUES
+  ((SELECT id FROM usuarios WHERE dni = '38450912'), 'TERMINOS', '1.0.0', '48540fc1e4682d1d34020c81a97043d85b0a87ba8627184495f0713e75a2f970', '127.0.0.1', 'seed', CURRENT_TIMESTAMP - INTERVAL '30 days'),
+  ((SELECT id FROM usuarios WHERE dni = '35123456'), 'TERMINOS', '1.0.0', '48540fc1e4682d1d34020c81a97043d85b0a87ba8627184495f0713e75a2f970', '127.0.0.1', 'seed', CURRENT_TIMESTAMP - INTERVAL '28 days'),
+  ((SELECT id FROM usuarios WHERE dni = '28999888'), 'TERMINOS', '1.0.0', '48540fc1e4682d1d34020c81a97043d85b0a87ba8627184495f0713e75a2f970', '127.0.0.1', 'seed', CURRENT_TIMESTAMP - INTERVAL '25 days'),
+  ((SELECT id FROM usuarios WHERE dni = '11111111'), 'TERMINOS', '1.0.0', '48540fc1e4682d1d34020c81a97043d85b0a87ba8627184495f0713e75a2f970', '127.0.0.1', 'seed', CURRENT_TIMESTAMP - INTERVAL '20 days'),
+  ((SELECT id FROM usuarios WHERE dni = '11111111'), 'PRIVACIDAD', '1.0.0', 'db52f0ee903542621c449a8ab2f150ed5e8bae4953fce2e37cb8afeb16061c20', '127.0.0.1', 'seed', CURRENT_TIMESTAMP - INTERVAL '20 days');
+
+-- 23. Reajustar las secuencias de las tablas nuevas
 SELECT setval('usuarios_id_seq', (SELECT MAX(id) FROM usuarios));
 SELECT setval('instituciones_id_seq', (SELECT MAX(id) FROM instituciones));
 SELECT setval('cupos_necesidad_id_seq', (SELECT MAX(id) FROM cupos_necesidad));
@@ -191,3 +268,6 @@ SELECT setval('reportes_id_seq', (SELECT MAX(id) FROM reportes));
 SELECT setval('intercambios_id_seq', (SELECT MAX(id) FROM intercambios));
 SELECT setval('resenas_id_seq', (SELECT MAX(id) FROM resenas));
 SELECT setval('sugerencias_esfuerzo_id_seq', (SELECT MAX(id) FROM sugerencias_esfuerzo));
+SELECT setval('moderacion_imagenes_id_seq', (SELECT MAX(id) FROM moderacion_imagenes));
+SELECT setval('mensajes_contacto_id_seq', (SELECT MAX(id) FROM mensajes_contacto));
+SELECT setval('aceptaciones_legales_id_seq', (SELECT MAX(id) FROM aceptaciones_legales));
