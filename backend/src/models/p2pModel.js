@@ -18,7 +18,6 @@ class P2PModel {
         p.imagen_url, 
         p.estado,
         u.nombre AS oferente_nombre,
-        u.telefono AS oferente_telefono,
         (SELECT COUNT(*) FROM intercambios 
           WHERE estado = 'COMPLETADO' AND (dueno_id = u.id OR ofertante_id = u.id)) AS oferente_trueques,
         (SELECT COUNT(*) FROM nexos_sociales WHERE usuario_id = u.id) AS oferente_voluntariados,
@@ -26,7 +25,9 @@ class P2PModel {
         (SELECT COUNT(*) FROM resenas WHERE destino_id = u.id) AS oferente_resenas,
         TO_CHAR(p.creado_en AT TIME ZONE 'America/Argentina/Buenos_Aires', 'DD/MM/YYYY HH24:MI') AS creado_en
       FROM publicaciones_p2p p
-      JOIN usuarios u ON p.usuario_id = u.id AND u.activo = TRUE
+      JOIN usuarios u ON p.usuario_id = u.id
+        AND u.activo = TRUE
+        AND (u.suspendido_hasta IS NULL OR u.suspendido_hasta <= CURRENT_TIMESTAMP)
       WHERE p.estado = 'Activo'
     `;
 
@@ -118,24 +119,39 @@ class P2PModel {
    * Crea una nueva publicación P2P en la base de datos.
    * El nivel de esfuerzo se calcula automáticamente en el controller.
    */
-  static async crearPublicacion({ usuarioId, titulo, descripcion, nivelEsfuerzo, tipoItem, imagenUrl }) {
+  static async crearPublicacion({ usuarioId, titulo, descripcion, nivelEsfuerzo, tipoItem, imagenUrl, nombreArchivoImagen }) {
+    // Se inserta directamente en PENDIENTE_REVISION: ninguna publicación
+    // puede nacer visible. Recién la moderación la activa.
     const query = `
-      INSERT INTO publicaciones_p2p (usuario_id, titulo, descripcion, nivel_esfuerzo, tipo_item, imagen_url)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING 
-        id, 
+      INSERT INTO publicaciones_p2p (usuario_id, titulo, descripcion, nivel_esfuerzo, tipo_item, imagen_url, estado)
+      VALUES ($1, $2, $3, $4, $5, $6, 'PENDIENTE_REVISION')
+      RETURNING
+        id,
         usuario_id,
-        titulo, 
-        descripcion, 
+        titulo,
+        descripcion,
         nivel_esfuerzo,
         tipo_item,
-        imagen_url, 
-        estado, 
+        imagen_url,
+        estado,
         TO_CHAR(creado_en AT TIME ZONE 'America/Argentina/Buenos_Aires', 'DD/MM/YYYY HH24:MI') AS creado_en;
     `;
     const values = [usuarioId, titulo, descripcion, nivelEsfuerzo, tipoItem, imagenUrl || null];
     const result = await db.query(query, values);
-    return result.rows[0];
+    const nueva = result.rows[0];
+
+    // Se vincula la imagen subida con la publicación para que la cola de
+    // moderación pueda juzgarla con su contexto.
+    if (nombreArchivoImagen) {
+      await db.query(
+        `UPDATE moderacion_imagenes
+         SET publicacion_id = $1
+         WHERE nombre_archivo = $2 AND publicacion_id IS NULL`,
+        [nueva.id, nombreArchivoImagen]
+      );
+    }
+
+    return nueva;
   }
 }
 

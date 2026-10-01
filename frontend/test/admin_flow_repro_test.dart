@@ -85,7 +85,7 @@ class _FakeClient implements HttpClient {
 }
 
 class _FakeRequest implements HttpClientRequest {
-final Uri url;
+  final Uri url;
   final String metodo;
   _FakeRequest(this.url, {this.metodo = 'GET'});
 
@@ -156,18 +156,17 @@ final Uri url;
 
   static List<int> _respuesta(Uri url) {
     final path = url.path;
-    final body =
-        path.contains('/admin/estadisticas')
-            ? _estadisticasJson
-            : path.contains('/admin/reportes')
-                ? _reportesJson
-                : path.contains('/admin/sugerencias-esfuerzo')
-                    ? _sugerenciasJson
-                    : path.contains('/instituciones')
-                        ? _institucionesJson
-                        : path.contains('/publicaciones')
-                            ? _publicacionesJson
-                            : _perfilVecinoJson;
+    final body = path.contains('/admin/estadisticas')
+        ? _estadisticasJson
+        : path.contains('/admin/reportes')
+            ? _reportesJson
+            : path.contains('/admin/sugerencias-esfuerzo')
+                ? _sugerenciasJson
+                : path.contains('/instituciones')
+                    ? _institucionesJson
+                    : path.contains('/publicaciones')
+                        ? _publicacionesJson
+                        : _perfilVecinoJson;
     return body.codeUnits;
   }
 
@@ -216,8 +215,8 @@ class _FakeHeaders implements HttpHeaders {
   }
 
   @override
-  void remove(String name, Object value) => _e.removeWhere(
-      (x) => x.key.toLowerCase() == name.toLowerCase() && x.value == value.toString());
+  void remove(String name, Object value) => _e.removeWhere((x) =>
+      x.key.toLowerCase() == name.toLowerCase() && x.value == value.toString());
 
   @override
   void removeAll(String name) =>
@@ -244,7 +243,7 @@ class _FakeResponse implements HttpClientResponse {
   bool get persistentConnection => true;
   @override
   String get reasonPhrase => 'OK';
-@override
+  @override
   HttpClientResponseCompressionState get compressionState =>
       HttpClientResponseCompressionState.notCompressed;
   @override
@@ -267,7 +266,7 @@ class _FakeResponse implements HttpClientResponse {
     );
   }
 
-@override
+  @override
   Future<String> fold<String>(String initialValue,
       String combine(String previous, Uint8List element)) async {
     return combine(initialValue, Uint8List.fromList(_data));
@@ -286,8 +285,7 @@ class _FakeResponse implements HttpClientResponse {
 void main() {
   testWidgets(
       'App real (SwitchApp) + diálogo admin + teclado (paleta suave, escala 1.5) '
-      'no lanza "infinite width"',
-      (WidgetTester tester) async {
+      'no lanza "infinite width"', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     await AccesibilidadService.instancia.cargar();
     AccesibilidadService.instancia.paletaSuave.value = true;
@@ -342,7 +340,8 @@ void main() {
       debugPrint('ERROR FLUJO: $e');
     }
     expect(
-      errores.where((e) => e.contains('infinite width') || e.contains('BoxConstraints forces')),
+      errores.where((e) =>
+          e.contains('infinite width') || e.contains('BoxConstraints forces')),
       isEmpty,
       reason: 'Se reprodujo "BoxConstraints forces an infinite width":\n'
           '${errores.take(5).join('\n---\n')}',

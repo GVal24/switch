@@ -9,7 +9,8 @@ class InstitucionesService {
 
   static Future<List<dynamic>> obtenerInstituciones() async {
     try {
-      final res = await http.get(Uri.parse('${ApiService.baseUrl}/instituciones'));
+      final res =
+          await http.get(Uri.parse('${ApiService.baseUrl}/instituciones'));
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
         if (decoded is List) {
@@ -24,9 +25,11 @@ class InstitucionesService {
     return [];
   }
 
-  static Future<List<dynamic>> obtenerCuposPorInstitucion(String institucionId) async {
+  static Future<List<dynamic>> obtenerCuposPorInstitucion(
+      String institucionId) async {
     try {
-      final res = await http.get(Uri.parse('${ApiService.baseUrl}/instituciones/$institucionId/cupos'));
+      final res = await http.get(Uri.parse(
+          '${ApiService.baseUrl}/instituciones/$institucionId/cupos'));
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
         if (decoded is List) {
@@ -65,7 +68,8 @@ class InstitucionesService {
       );
       final decoded = jsonDecode(res.body);
       return {
-        'exito': (res.statusCode == 200 || res.statusCode == 201) && decoded['exito'] == true,
+        'exito': (res.statusCode == 200 || res.statusCode == 201) &&
+            decoded['exito'] == true,
         'mensaje': decoded['mensaje'] ?? 'No se pudo registrar la institución.',
       };
     } catch (e) {
@@ -112,7 +116,8 @@ class InstitucionesService {
       } else {
         return {
           'exito': false,
-          'mensaje': decoded['mensaje'] ?? 'Error al validar QR (${res.statusCode})'
+          'mensaje':
+              decoded['mensaje'] ?? 'Error al validar QR (${res.statusCode})'
         };
       }
     } catch (e) {

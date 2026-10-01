@@ -79,9 +79,15 @@ class AuthService {
           'dni': datos['dni'] ?? dni,
           'nombre': datos['nombre'] ?? '',
           'apellido': datos['apellido'] ?? '',
-          'nombreCompleto': '${datos['nombre'] ?? ''} ${datos['apellido'] ?? ''}'.trim(),
+          'nombreCompleto':
+              '${datos['nombre'] ?? ''} ${datos['apellido'] ?? ''}'.trim(),
           'telefono': datos['telefono'] ?? '',
           'rol': datos['rol'] ?? 'VECINO',
+          // Una cuenta suspendida entra, pero en modo lectura: la app usa esto
+          // para avisarle que no va a poder publicar, proponer ni escribir.
+          'habilitado': datos['habilitado'] != false,
+          'suspensionVigente': datos['suspensionVigente'] == true,
+          'suspendidoHasta': datos['suspendidoHasta'],
         };
 
         // Persistimos el token JWT para las próximas peticiones
@@ -91,7 +97,15 @@ class AuthService {
         }
 
         await guardarSesionLocal(usuario);
-        return {'exito': true, 'mensaje': decoded['mensaje'], 'usuario': usuario};
+        return {
+          'exito': true,
+          'mensaje': decoded['mensaje'],
+          'usuario': usuario,
+          if (datos['suspensionVigente'] == true)
+            'avisoSuspension':
+                'Tu cuenta está suspendida hasta el ${datos['suspendidoHasta']}. '
+                    'Podés ver la plataforma, pero no publicar, proponer trueques ni escribir por chat.',
+        };
       }
 
       return {
@@ -126,7 +140,8 @@ class AuthService {
           'dni': datos['dni'] ?? dni,
           'nombre': datos['nombre'] ?? '',
           'apellido': datos['apellido'] ?? '',
-          'nombreCompleto': '${datos['nombre'] ?? ''} ${datos['apellido'] ?? ''}'.trim(),
+          'nombreCompleto':
+              '${datos['nombre'] ?? ''} ${datos['apellido'] ?? ''}'.trim(),
           'telefono': datos['telefono'] ?? '',
           'rol': datos['rol'] ?? 'VECINO',
         };
@@ -136,7 +151,11 @@ class AuthService {
           await guardarToken(token);
         }
 
-        return {'exito': true, 'mensaje': decoded['mensaje'], 'usuario': usuario};
+        return {
+          'exito': true,
+          'mensaje': decoded['mensaje'],
+          'usuario': usuario
+        };
       }
 
       return {
@@ -158,7 +177,9 @@ class AuthService {
     required String telefono,
     required String password,
     required bool aceptoTerminos,
+    required bool aceptoPrivacidad,
     required bool esMayorEdad,
+    required String tokenVerificacion,
   }) async {
     try {
       final res = await http.post(
@@ -171,17 +192,27 @@ class AuthService {
           'telefono': telefono,
           'password': password,
           'aceptoTerminos': aceptoTerminos,
+          'aceptoPrivacidad': aceptoPrivacidad,
           'esMayorEdad': esMayorEdad,
+          'tokenVerificacion': tokenVerificacion,
         }),
       );
 
       final decoded = jsonDecode(res.body);
 
-      if ((res.statusCode == 201 || res.statusCode == 200) && decoded['exito'] == true) {
-        return {'exito': true, 'mensaje': decoded['mensaje'] ?? '¡Registro exitoso en Switch!'};
+      if ((res.statusCode == 201 || res.statusCode == 200) &&
+          decoded['exito'] == true) {
+        return {
+          'exito': true,
+          'mensaje': decoded['mensaje'] ?? '¡Registro exitoso en Switch!',
+          'datos': decoded['datos'],
+        };
       }
 
-      return {'exito': false, 'mensaje': decoded['mensaje'] ?? 'Error al registrar.'};
+      return {
+        'exito': false,
+        'mensaje': decoded['mensaje'] ?? 'Error al registrar.'
+      };
     } catch (e) {
       return {'exito': false, 'mensaje': 'Error de conexión con el servidor.'};
     }

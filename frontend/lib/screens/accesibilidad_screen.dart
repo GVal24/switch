@@ -32,7 +32,8 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
           children: [
             LogoSwitchIsotipo(size: 34),
             SizedBox(width: 12),
-            Text('Accesibilidad', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            Text('Accesibilidad',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
           ],
         ),
         actions: [
@@ -50,9 +51,12 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.accessibility_new, size: 40, color: AppTheme.acentoVerdeEco),
+                  const Icon(Icons.accessibility_new,
+                      size: 40, color: AppTheme.acentoVerdeEco),
                   const SizedBox(width: 12),
-                  Expanded(child: Text('Adaptá Switch a tu forma de ver el mundo', style: theme.textTheme.headlineLarge)),
+                  Expanded(
+                      child: Text('Adaptá Switch a tu forma de ver el mundo',
+                          style: theme.textTheme.headlineLarge)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -65,19 +69,25 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
               // ==========================================
               // 1. TAMAÑO DE TEXTO
               // ==========================================
-              _seccionTitulo(context, Icons.format_size_rounded, 'Tamaño del texto',
+              _seccionTitulo(
+                  context,
+                  Icons.format_size_rounded,
+                  'Tamaño del texto',
                   'Ideal si te cuesta leer los textos chicos.'),
               Card(
                 color: theme.colorScheme.surface,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ValueListenableBuilder<double>(
                     valueListenable: _acc.escalaTexto,
                     builder: (context, escala, _) => Column(
                       children: [
                         Row(
                           children: [
-                            const Text('A', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            const Text('A',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
                             Expanded(
                               child: Slider(
                                 value: escala,
@@ -89,11 +99,15 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
                                 onChanged: (val) => _acc.setEscalaTexto(val),
                               ),
                             ),
-                            const Text('A', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                            const Text('A',
+                                style: TextStyle(
+                                    fontSize: 28, fontWeight: FontWeight.bold)),
                           ],
                         ),
                         Text(
-                          escala == 1.0 ? 'Texto normal' : 'Texto aumentado al ${(escala * 100).round()}%',
+                          escala == 1.0
+                              ? 'Texto normal'
+                              : 'Texto aumentado al ${(escala * 100).round()}%',
                           style: theme.textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 8),
@@ -107,18 +121,23 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
               // ==========================================
               // 2. PALETAS DE COLOR
               // ==========================================
-              _seccionTitulo(context, Icons.palette_outlined, 'Colores de la app',
+              _seccionTitulo(
+                  context,
+                  Icons.palette_outlined,
+                  'Colores de la app',
                   'Elegí cómo querés ver Switch. Podés volver a la paleta original cuando quieras.'),
               ValueListenableBuilder<bool>(
                 valueListenable: _acc.paletaSuave,
-                builder: (context, paletaSuave, _) => ValueListenableBuilder<bool>(
+                builder: (context, paletaSuave, _) =>
+                    ValueListenableBuilder<bool>(
                   valueListenable: _acc.altoContraste,
                   builder: (context, altoContraste, _) => Column(
                     children: [
                       _tarjetaOpcion(
                         context,
                         titulo: 'Paleta suave y calma',
-                        descripcion: 'Tonos pastel de baja saturación, sin colores vibrantes ni contrastes agresivos. Recomendada si sos sensible a la sobreestimulación visual.',
+                        descripcion:
+                            'Tonos pastel de baja saturación, sin colores vibrantes ni contrastes agresivos. Recomendada si sos sensible a la sobreestimulación visual.',
                         icono: Icons.spa_rounded,
                         valor: paletaSuave,
                         onChanged: (val) => _acc.setPaletaSuave(val),
@@ -127,7 +146,8 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
                       _tarjetaOpcion(
                         context,
                         titulo: 'Alto contraste',
-                        descripcion: 'Negro y blanco puros con acentos amarillos y bordes gruesos. Pensada para personas con baja visión.',
+                        descripcion:
+                            'Negro y blanco puros con acentos amarillos y bordes gruesos. Pensada para personas con baja visión.',
                         icono: Icons.contrast_rounded,
                         valor: altoContraste,
                         onChanged: (val) => _acc.setAltoContraste(val),
@@ -142,7 +162,8 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
                 builder: (context, byn, _) => _tarjetaOpcion(
                   context,
                   titulo: 'Blanco y negro puro',
-                  descripcion: 'Convierte toda la app a escala de grises eliminando por completo los tonos de color. Se puede combinar con cualquier paleta.',
+                  descripcion:
+                      'Convierte toda la app a escala de grises eliminando por completo los tonos de color. Se puede combinar con cualquier paleta.',
                   icono: Icons.filter_b_and_w_rounded,
                   valor: byn,
                   onChanged: (val) => _acc.setBlancoNegro(val),
@@ -153,7 +174,10 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
               // ==========================================
               // 3. LECTORES DE PANTALLA (informativo real)
               // ==========================================
-              _seccionTitulo(context, Icons.record_voice_over_rounded, 'Lectores de pantalla',
+              _seccionTitulo(
+                  context,
+                  Icons.record_voice_over_rounded,
+                  'Lectores de pantalla',
                   'Switch es compatible con TalkBack (Android) y VoiceOver (iPhone).'),
               Container(
                 width: double.infinity,
@@ -161,19 +185,23 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
                 decoration: BoxDecoration(
                   color: AppTheme.acentoAzulTurquesa.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.acentoAzulTurquesa.withValues(alpha: 0.4)),
+                  border: Border.all(
+                      color:
+                          AppTheme.acentoAzulTurquesa.withValues(alpha: 0.4)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.info_outline_rounded, color: AppTheme.acentoAzulTurquesa, size: 22),
+                        Icon(Icons.info_outline_rounded,
+                            color: AppTheme.acentoAzulTurquesa, size: 22),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             'No necesitás activar nada acá',
-                            style: theme.textTheme.titleMedium?.copyWith(fontSize: 15),
+                            style: theme.textTheme.titleMedium
+                                ?.copyWith(fontSize: 15),
                           ),
                         ),
                       ],
@@ -193,25 +221,31 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
               // ==========================================
               // VISTA PREVIA EN VIVO
               // ==========================================
-              _seccionTitulo(context, Icons.preview_rounded, 'Vista previa', null),
+              _seccionTitulo(
+                  context, Icons.preview_rounded, 'Vista previa', null),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.acentoVerdeEco, width: 1.2),
+                  border:
+                      Border.all(color: AppTheme.acentoVerdeEco, width: 1.2),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Bicicleta Rodado 26', style: theme.textTheme.titleMedium),
+                    Text('Bicicleta Rodado 26',
+                        style: theme.textTheme.titleMedium),
                     const SizedBox(height: 6),
-                    Text('Así se ven los textos de las publicaciones e instituciones con tus ajustes actuales.', style: theme.textTheme.bodyLarge),
+                    Text(
+                        'Así se ven los textos de las publicaciones e instituciones con tus ajustes actuales.',
+                        style: theme.textTheme.bodyLarge),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () {},
-                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                      icon: const Icon(Icons.chat_bubble_outline_rounded,
+                          size: 18),
                       label: const Text('ASÍ SE VEN LOS BOTONES'),
                     ),
                   ],
@@ -228,7 +262,9 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
                     await _acc.restablecerTodo();
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Preferencias restablecidas.'), backgroundColor: AppTheme.acentoVerdeEco),
+                      const SnackBar(
+                          content: Text('Preferencias restablecidas.'),
+                          backgroundColor: AppTheme.acentoVerdeEco),
                     );
                   },
                   icon: const Icon(Icons.restart_alt_rounded),
@@ -243,7 +279,8 @@ class _AccesibilidadScreenState extends State<AccesibilidadScreen> {
     );
   }
 
-  Widget _seccionTitulo(BuildContext context, IconData icono, String titulo, String? descripcion) {
+  Widget _seccionTitulo(BuildContext context, IconData icono, String titulo,
+      String? descripcion) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

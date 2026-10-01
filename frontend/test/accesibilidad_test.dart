@@ -6,7 +6,8 @@ import 'package:frontend/main.dart';
 import 'package:frontend/services/accesibilidad_service.dart';
 
 void main() {
-  testWidgets('Navegación a Accesibilidad y uso de sus controles no lanza errores',
+  testWidgets(
+      'Navegación a Accesibilidad y uso de sus controles no lanza errores',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     await AccesibilidadService.instancia.cargar();
@@ -33,7 +34,11 @@ void main() {
     }
 
     // Activa los switches de paleta (con scroll hasta cada uno)
-    for (final texto in ['Paleta suave y calma', 'Alto contraste', 'Blanco y negro puro']) {
+    for (final texto in [
+      'Paleta suave y calma',
+      'Alto contraste',
+      'Blanco y negro puro'
+    ]) {
       final sw = find.widgetWithText(SwitchListTile, texto);
       if (sw.evaluate().isNotEmpty) {
         await tester.scrollUntilVisible(sw.first, 200,
@@ -60,7 +65,12 @@ void main() {
     await tester.pumpAndSettle();
 
     // Cambia a otras pestañas y vuelve
-    for (final tab in ['Voluntariado', 'Catálogo P2P', 'Mi Perfil', 'Accesibilidad']) {
+    for (final tab in [
+      'Voluntariado',
+      'Catálogo P2P',
+      'Mi Perfil',
+      'Accesibilidad'
+    ]) {
       final t = find.text(tab);
       if (t.evaluate().isNotEmpty) {
         await tester.tap(t.first);
@@ -71,7 +81,9 @@ void main() {
     FlutterError.onError = handlerOriginal;
 
     final erroresDeClave = errores
-        .where((e) => e.toString().contains('GlobalKey') || e.toString().contains('same key'))
+        .where((e) =>
+            e.toString().contains('GlobalKey') ||
+            e.toString().contains('same key'))
         .toList();
     expect(erroresDeClave, isEmpty,
         reason: 'Se detectaron errores de claves duplicadas: '

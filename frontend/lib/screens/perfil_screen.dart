@@ -7,7 +7,8 @@ import 'mis_trueques_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   final Map<String, dynamic>? usuarioActual; // Usuario logueado
-  final Map<String, dynamic>? usuarioVisitado; // Usuario del catálogo (opcional)
+  final Map<String, dynamic>?
+      usuarioVisitado; // Usuario del catálogo (opcional)
   final VoidCallback onToggleAccesibilidad;
   final bool modoAccesibleActivo;
   final Function(Map<String, dynamic>?)? onSesionCambiada;
@@ -84,7 +85,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final visitado = widget.usuarioVisitado;
     if (visitado == null || (visitado['id'] ?? '').toString().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se puede reportar a este usuario.'), backgroundColor: Colors.redAccent),
+        const SnackBar(
+            content: Text('No se puede reportar a este usuario.'),
+            backgroundColor: Colors.redAccent),
       );
       return;
     }
@@ -111,10 +114,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
               style: TextStyle(color: context.colorTexto),
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: 'Ej: Incumplimiento en intercambio, conducta inapropiada...',
-                hintStyle: TextStyle(color: context.colorTextoSuave.withValues(alpha: 0.5), fontSize: 12),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colorTextoSuave.withValues(alpha: 0.3))),
-                focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppTheme.acentoVerdeEco)),
+                hintText:
+                    'Ej: Incumplimiento en intercambio, conducta inapropiada...',
+                hintStyle: TextStyle(
+                    color: context.colorTextoSuave.withValues(alpha: 0.5),
+                    fontSize: 12),
+                enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color: context.colorTextoSuave.withValues(alpha: 0.3))),
+                focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.acentoVerdeEco)),
               ),
             ),
           ],
@@ -141,11 +150,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   content: Text(exito
                       ? 'Reporte enviado. El equipo de moderación lo va a revisar.'
                       : 'No se pudo enviar el reporte. ¿Iniciaste sesión?'),
-                  backgroundColor: exito ? AppTheme.acentoVerdeEco : Colors.redAccent,
+                  backgroundColor:
+                      exito ? AppTheme.acentoVerdeEco : Colors.redAccent,
                 ),
               );
             },
-            child: const Text('ENVIAR REPORTE', style: TextStyle(color: Colors.white)),
+            child: const Text('ENVIAR REPORTE',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -183,7 +194,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          esMiPerfil ? 'Mi Perfil' : 'Perfil de ${widget.usuarioVisitado?['nombre'] ?? ''}',
+          esMiPerfil
+              ? 'Mi Perfil'
+              : 'Perfil de ${widget.usuarioVisitado?['nombre'] ?? ''}',
           style: TextStyle(fontSize: 18 * factorTexto),
         ),
         backgroundColor: Colors.transparent,
@@ -191,14 +204,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
         actions: [
           if (esMiPerfil && widget.onMostrarLoginAdmin != null)
             IconButton(
-              icon: Icon(Icons.admin_panel_settings_outlined, color: context.colorTextoSuave, size: 24 * factorIconos),
+              icon: Icon(Icons.admin_panel_settings_outlined,
+                  color: context.colorTextoSuave, size: 24 * factorIconos),
               tooltip: 'Acceso Administración',
               onPressed: widget.onMostrarLoginAdmin,
             ),
           // Banderita para reportar (solo al ver a OTRO usuario)
           if (!esMiPerfil)
             IconButton(
-              icon: Icon(Icons.flag_outlined, color: Colors.redAccent, size: 24 * factorIconos),
+              icon: Icon(Icons.flag_outlined,
+                  color: Colors.redAccent, size: 24 * factorIconos),
               tooltip: 'Reportar usuario',
               onPressed: _mostrarDialogoReporte,
             ),
@@ -209,7 +224,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
               future: _futuroPerfil,
               builder: (ctx, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppTheme.acentoVerdeEco));
+                  return const Center(
+                      child: CircularProgressIndicator(
+                          color: AppTheme.acentoVerdeEco));
                 }
                 final perfil = snapshot.data;
                 if (perfil == null) {
@@ -266,14 +283,26 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final String identificador =
         'DNI ${datos['dni'] ?? ''} · ${datos['rol'] ?? 'VECINO'}';
     final stats = datos['estadisticas'];
-    final int trueques = (stats?['truequesCompletados'] ?? datos['trueques'] ?? 0) is int
+    final int trueques = (stats?['truequesCompletados'] ??
+            datos['trueques'] ??
+            0) is int
         ? (stats?['truequesCompletados'] ?? datos['trueques'] ?? 0)
-        : int.tryParse('${stats?['truequesCompletados'] ?? datos['trueques'] ?? 0}') ?? 0;
-    final int voluntariados = (stats?['voluntariados'] ?? datos['voluntariados'] ?? 0) is int
+        : int.tryParse(
+                '${stats?['truequesCompletados'] ?? datos['trueques'] ?? 0}') ??
+            0;
+    final int voluntariados = (stats?['voluntariados'] ??
+            datos['voluntariados'] ??
+            0) is int
         ? (stats?['voluntariados'] ?? datos['voluntariados'] ?? 0)
-        : int.tryParse('${stats?['voluntariados'] ?? datos['voluntariados'] ?? 0}') ?? 0;
-    final calificacion = double.tryParse('${stats?['calificacionPromedio'] ?? datos['calificacion'] ?? 0}') ?? 0.0;
-    final int resenas = int.tryParse('${stats?['cantidadResenas'] ?? datos['resenas'] ?? 0}') ?? 0;
+        : int.tryParse(
+                '${stats?['voluntariados'] ?? datos['voluntariados'] ?? 0}') ??
+            0;
+    final calificacion = double.tryParse(
+            '${stats?['calificacionPromedio'] ?? datos['calificacion'] ?? 0}') ??
+        0.0;
+    final int resenas =
+        int.tryParse('${stats?['cantidadResenas'] ?? datos['resenas'] ?? 0}') ??
+            0;
     final impacto = datos['impacto'];
 
     return Column(
@@ -281,17 +310,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
         CircleAvatar(
           radius: 42 * factorIconos,
           backgroundColor: AppTheme.acentoVerdeEco,
-          child: Icon(Icons.person, size: 50 * factorIconos, color: Colors.black),
+          child:
+              Icon(Icons.person, size: 50 * factorIconos, color: Colors.black),
         ),
         const SizedBox(height: 12),
         Text(
           nombre,
-          style: TextStyle(color: context.colorTexto, fontSize: 22 * factorTexto, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: context.colorTexto,
+              fontSize: 22 * factorTexto,
+              fontWeight: FontWeight.bold),
         ),
         if (esMiPerfil)
           Text(
             identificador,
-            style: TextStyle(color: context.colorTextoSuave, fontSize: 14 * factorTexto),
+            style: TextStyle(
+                color: context.colorTextoSuave, fontSize: 14 * factorTexto),
           )
         else
           Row(
@@ -302,7 +336,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
               const SizedBox(width: 4),
               Text(
                 '${impacto?['nivel']?['nombre'] ?? 'Vecino de la comunidad'}',
-                style: TextStyle(color: AppTheme.acentoVerdeEco, fontSize: 13 * factorTexto),
+                style: TextStyle(
+                    color: AppTheme.acentoVerdeEco, fontSize: 13 * factorTexto),
               ),
             ],
           ),
@@ -376,7 +411,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
               icon: Icon(Icons.swap_horiz_rounded, size: 20 * factorIconos),
               label: Text(
                 'MIS TRUEQUES',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14 * factorTexto),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 14 * factorTexto),
               ),
             ),
           ),
@@ -391,19 +427,23 @@ class _PerfilScreenState extends State<PerfilScreen> {
               activeColor: AppTheme.acentoVerdeEco,
               title: Text(
                 'Modo Alta Accesibilidad',
-                style: TextStyle(color: context.colorTexto, fontSize: 16 * factorTexto, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: context.colorTexto,
+                    fontSize: 16 * factorTexto,
+                    fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
                 'Aumenta el contraste y tamaño de iconos/textos',
-                style: TextStyle(color: context.colorTextoSuave, fontSize: 12 * factorTexto),
+                style: TextStyle(
+                    color: context.colorTextoSuave, fontSize: 12 * factorTexto),
               ),
-              secondary: Icon(Icons.accessibility_new, color: AppTheme.acentoVerdeEco, size: 28 * factorIconos),
+              secondary: Icon(Icons.accessibility_new,
+                  color: AppTheme.acentoVerdeEco, size: 28 * factorIconos),
               value: widget.modoAccesibleActivo,
               onChanged: (_) => widget.onToggleAccesibilidad(),
             ),
           ),
           const SizedBox(height: 24),
-
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -421,7 +461,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
               icon: Icon(Icons.logout, size: 20 * factorIconos),
               label: Text(
                 'CERRAR SESIÓN',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14 * factorTexto),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 14 * factorTexto),
               ),
             ),
           ),
@@ -441,7 +482,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final int numeroNivel = int.tryParse('${nivel?['numero'] ?? 1}') ?? 1;
     final String nombreNivel = nivel?['nombre'] ?? 'Semilla del Barrio';
     final int puntos = int.tryParse('${impacto?['puntos'] ?? 0}') ?? 0;
-    final double progreso = double.tryParse('${impacto?['progreso'] ?? 0}') ?? 0;
+    final double progreso =
+        double.tryParse('${impacto?['progreso'] ?? 0}') ?? 0;
     final siguiente = impacto?['nivelSiguiente'];
     final List insignias = (impacto?['insignias'] ?? []) as List;
 
@@ -451,7 +493,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
       decoration: BoxDecoration(
         color: colorFondoTarjeta,
         borderRadius: BorderRadius.circular(16),
-        border: widget.modoAccesibleActivo ? Border.all(color: context.colorTextoSuave.withValues(alpha: 0.3), width: 2) : null,
+        border: widget.modoAccesibleActivo
+            ? Border.all(
+                color: context.colorTextoSuave.withValues(alpha: 0.3), width: 2)
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -461,15 +506,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
             children: [
               Text(
                 'Impacto Comunitario',
-                style: TextStyle(color: context.colorTexto, fontSize: 16 * factorTexto, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: context.colorTexto,
+                    fontSize: 16 * factorTexto,
+                    fontWeight: FontWeight.bold),
               ),
-              Icon(Icons.emoji_events_outlined, color: AppTheme.acentoVerdeEco, size: 24 * factorIconos),
+              Icon(Icons.emoji_events_outlined,
+                  color: AppTheme.acentoVerdeEco, size: 24 * factorIconos),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             children: [
-              Icon(_iconoNivel(numeroNivel), color: AppTheme.acentoVerdeEco, size: 26 * factorIconos),
+              Icon(_iconoNivel(numeroNivel),
+                  color: AppTheme.acentoVerdeEco, size: 26 * factorIconos),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -503,24 +553,32 @@ class _PerfilScreenState extends State<PerfilScreen> {
             siguiente != null
                 ? 'Te faltan ${siguiente['puntos'] - puntos} pts para ser "${siguiente['nombre']}"'
                 : '¡Alcanzaste el nivel máximo de la comunidad!',
-            style: TextStyle(color: context.colorTextoSuave, fontSize: 12 * factorTexto),
+            style: TextStyle(
+                color: context.colorTextoSuave, fontSize: 12 * factorTexto),
           ),
           if (esMiPerfil) ...[
             const SizedBox(height: 14),
             Text(
               'Cómo sumar puntos',
-              style: TextStyle(color: context.colorTextoSuave, fontSize: 12 * factorTexto, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: context.colorTextoSuave,
+                  fontSize: 12 * factorTexto,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
               'Trueque completado +10 · Voluntariado en institución +15 · Buena reputación hasta +10',
-              style: TextStyle(color: context.colorTextoSuave, fontSize: 11.5 * factorTexto),
+              style: TextStyle(
+                  color: context.colorTextoSuave, fontSize: 11.5 * factorTexto),
             ),
           ],
           const SizedBox(height: 14),
           Text(
             'Insignias',
-            style: TextStyle(color: context.colorTextoSuave, fontSize: 13 * factorTexto, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: context.colorTextoSuave,
+                fontSize: 13 * factorTexto,
+                fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -539,21 +597,31 @@ class _PerfilScreenState extends State<PerfilScreen> {
                             ? Icons.help_outline_rounded
                             : Icons.lock_outline_rounded,
                     size: 18,
-                    color: desbloqueada ? AppTheme.acentoVerdeEco : context.colorTextoSuave.withValues(alpha: 0.35),
+                    color: desbloqueada
+                        ? AppTheme.acentoVerdeEco
+                        : context.colorTextoSuave.withValues(alpha: 0.35),
                   ),
                   label: Text(
                     i['nombre'] ?? '',
                     style: TextStyle(
                       fontSize: 11.5,
-                      color: desbloqueada ? context.colorTexto : context.colorTextoSuave.withValues(alpha: 0.5),
-                      fontWeight: desbloqueada ? FontWeight.w600 : FontWeight.normal,
-                      fontStyle: secretaBloqueada ? FontStyle.italic : FontStyle.normal,
+                      color: desbloqueada
+                          ? context.colorTexto
+                          : context.colorTextoSuave.withValues(alpha: 0.5),
+                      fontWeight:
+                          desbloqueada ? FontWeight.w600 : FontWeight.normal,
+                      fontStyle: secretaBloqueada
+                          ? FontStyle.italic
+                          : FontStyle.normal,
                     ),
                   ),
                   backgroundColor: desbloqueada
                       ? AppTheme.acentoVerdeEco.withValues(alpha: 0.15)
                       : context.colorTextoSuave.withValues(alpha: 0.08),
-                  side: BorderSide(color: desbloqueada ? AppTheme.acentoVerdeEco : context.colorTextoSuave.withValues(alpha: 0.2)),
+                  side: BorderSide(
+                      color: desbloqueada
+                          ? AppTheme.acentoVerdeEco
+                          : context.colorTextoSuave.withValues(alpha: 0.2)),
                 ),
               );
             }).toList(),
@@ -585,12 +653,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
             const SizedBox(height: 8),
             Text(
               valor,
-              style: TextStyle(color: context.colorTexto, fontSize: 22 * factorTexto, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: context.colorTexto,
+                  fontSize: 22 * factorTexto,
+                  fontWeight: FontWeight.bold),
             ),
             Text(
               titulo,
               textAlign: TextAlign.center,
-              style: TextStyle(color: context.colorTextoSuave, fontSize: 12 * factorTexto),
+              style: TextStyle(
+                  color: context.colorTextoSuave, fontSize: 12 * factorTexto),
             ),
           ],
         ),

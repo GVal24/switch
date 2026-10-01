@@ -37,15 +37,22 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
     if (!mounted) return;
     final idDeseada = (widget.item['id'] ?? '').toString();
     setState(() {
-      _misPublicacionesDisponibles =
-          resultado.where((p) => (p['id'] ?? '').toString() != idDeseada).toList();
+      _misPublicacionesDisponibles = resultado
+          .where((p) => (p['id'] ?? '').toString() != idDeseada)
+          .toList();
       _cargandoMisPublicaciones = false;
     });
   }
 
   Future<void> _procesarPropuestaYNavegar() async {
-    final oferenteId = (widget.item['oferente_id'] ?? widget.item['oferenteId'] ?? widget.item['usuario_id'] ?? '').toString();
-    final oferenteNombre = widget.item['oferente_nombre'] ?? widget.item['oferenteNombre'] ?? 'Usuario';
+    final oferenteId = (widget.item['oferente_id'] ??
+            widget.item['oferenteId'] ??
+            widget.item['usuario_id'] ??
+            '')
+        .toString();
+    final oferenteNombre = widget.item['oferente_nombre'] ??
+        widget.item['oferenteNombre'] ??
+        'Usuario';
 
     final res = await ApiService.proponerSwitch(
       publicacionDeseadaId: (widget.item['id'] ?? '').toString(),
@@ -57,7 +64,8 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(res['mensaje'] ?? ''),
-        backgroundColor: res['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
+        backgroundColor:
+            res['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
       ),
     );
 
@@ -77,14 +85,21 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
 
   void _mostrarDialogoReporte() {
     final motivoController = TextEditingController();
-    final oferenteId = (widget.item['oferente_id'] ?? widget.item['oferenteId'] ?? widget.item['usuario_id'] ?? '2').toString();
-    final oferenteNombre = widget.item['oferente_nombre'] ?? widget.item['oferenteNombre'] ?? 'Usuario';
+    final oferenteId = (widget.item['oferente_id'] ??
+            widget.item['oferenteId'] ??
+            widget.item['usuario_id'] ??
+            '2')
+        .toString();
+    final oferenteNombre = widget.item['oferente_nombre'] ??
+        widget.item['oferenteNombre'] ??
+        'Usuario';
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.colorTarjeta,
-        title: Text('Reportar Usuario', style: TextStyle(color: context.colorTexto)),
+        title: Text('Reportar Usuario',
+            style: TextStyle(color: context.colorTexto)),
         content: TextField(
           controller: motivoController,
           style: TextStyle(color: context.colorTexto),
@@ -138,8 +153,12 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                   value: nivel,
                   groupValue: nivelElegido,
                   activeColor: AppTheme.acentoVerdeEco,
-                  title: Text(nivel, style: TextStyle(color: _obtenerColorEsfuerzo(nivel), fontWeight: FontWeight.bold)),
-                  onChanged: (v) => setDialogState(() => nivelElegido = v ?? 'MEDIO'),
+                  title: Text(nivel,
+                      style: TextStyle(
+                          color: _obtenerColorEsfuerzo(nivel),
+                          fontWeight: FontWeight.bold)),
+                  onChanged: (v) =>
+                      setDialogState(() => nivelElegido = v ?? 'MEDIO'),
                 ),
               ),
             ],
@@ -147,7 +166,8 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
+              child:
+                  const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -160,7 +180,9 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(res['mensaje'] ?? ''),
-                    backgroundColor: res['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
+                    backgroundColor: res['exito'] == true
+                        ? AppTheme.acentoVerdeEco
+                        : Colors.redAccent,
                   ),
                 );
               },
@@ -204,14 +226,17 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Elegí qué ofrecés a cambio (solo publicaciones de tu catálogo):',
-                  style: TextStyle(color: context.colorTextoSuave, fontSize: 13),
+                  style:
+                      TextStyle(color: context.colorTextoSuave, fontSize: 13),
                 ),
-                Divider(color: context.colorTextoSuave.withValues(alpha: 0.25), height: 24),
-
+                Divider(
+                    color: context.colorTextoSuave.withValues(alpha: 0.25),
+                    height: 24),
                 Expanded(
                   child: _cargandoMisPublicaciones
                       ? const Center(
-                          child: CircularProgressIndicator(color: AppTheme.acentoVerdeEco))
+                          child: CircularProgressIndicator(
+                              color: AppTheme.acentoVerdeEco))
                       : _misPublicacionesDisponibles.isEmpty
                           ? Center(
                               child: Padding(
@@ -219,7 +244,9 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                                 child: Text(
                                   '¡Todavía no tenés publicaciones activas!\n\nCargá un objeto o servicio en el catálogo para poder ofrecerlo a cambio.',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(color: context.colorTextoSuave, fontSize: 14),
+                                  style: TextStyle(
+                                      color: context.colorTextoSuave,
+                                      fontSize: 14),
                                 ),
                               ),
                             )
@@ -227,12 +254,16 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                               shrinkWrap: true,
                               itemCount: _misPublicacionesDisponibles.length,
                               itemBuilder: (ctx, idx) {
-                                final miItem = _misPublicacionesDisponibles[idx];
+                                final miItem =
+                                    _misPublicacionesDisponibles[idx];
                                 final String titulo = miItem['titulo'] ?? '';
                                 final String desc = miItem['descripcion'] ?? '';
-                                final String? imagen = miItem['imagen_url'] ?? miItem['imagenUrl'];
-                                final String idPub = (miItem['id'] ?? '').toString();
-                                final bool estaSeleccionado = _idsSeleccionados.contains(idPub);
+                                final String? imagen =
+                                    miItem['imagen_url'] ?? miItem['imagenUrl'];
+                                final String idPub =
+                                    (miItem['id'] ?? '').toString();
+                                final bool estaSeleccionado =
+                                    _idsSeleccionados.contains(idPub);
 
                                 return CheckboxListTile(
                                   activeColor: AppTheme.acentoVerdeEco,
@@ -242,25 +273,40 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                                     child: SizedBox(
                                       width: 52,
                                       height: 52,
-                                      child: (imagen != null && imagen.isNotEmpty)
+                                      child: (imagen != null &&
+                                              imagen.isNotEmpty)
                                           ? Image.network(
                                               imagen,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) => Container(
+                                              errorBuilder: (_, __, ___) =>
+                                                  Container(
                                                 color: context.colorTarjeta,
-                                                child: const Icon(Icons.inventory_2_outlined,
-                                                    color: AppTheme.acentoVerdeEco, size: 24),
+                                                child: const Icon(
+                                                    Icons.inventory_2_outlined,
+                                                    color:
+                                                        AppTheme.acentoVerdeEco,
+                                                    size: 24),
                                               ),
                                             )
                                           : Container(
                                               color: context.colorTarjeta,
-                                              child: const Icon(Icons.inventory_2_outlined,
-                                                  color: AppTheme.acentoVerdeEco, size: 24),
+                                              child: const Icon(
+                                                  Icons.inventory_2_outlined,
+                                                  color:
+                                                      AppTheme.acentoVerdeEco,
+                                                  size: 24),
                                             ),
                                     ),
                                   ),
-                                  title: Text(titulo, style: TextStyle(color: context.colorTexto, fontWeight: FontWeight.bold)),
-                                  subtitle: Text(desc, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: context.colorTextoSuave)),
+                                  title: Text(titulo,
+                                      style: TextStyle(
+                                          color: context.colorTexto,
+                                          fontWeight: FontWeight.bold)),
+                                  subtitle: Text(desc,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          color: context.colorTextoSuave)),
                                   value: estaSeleccionado,
                                   onChanged: (bool? valor) {
                                     setModalState(() {
@@ -276,16 +322,17 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                               },
                             ),
                 ),
-
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: (_misPublicacionesDisponibles.isEmpty || _idsSeleccionados.isEmpty)
+                    onPressed: (_misPublicacionesDisponibles.isEmpty ||
+                            _idsSeleccionados.isEmpty)
                         ? null
                         : () {
                             Navigator.pop(modalContext);
-                            Future.delayed(const Duration(milliseconds: 300), () {
+                            Future.delayed(const Duration(milliseconds: 300),
+                                () {
                               _procesarPropuestaYNavegar();
                             });
                           },
@@ -307,7 +354,9 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
   }
 
   Widget _buildImagenHeader(String? url, String? titulo) {
-    if (url != null && url.isNotEmpty && (url.startsWith('http://') || url.startsWith('https://'))) {
+    if (url != null &&
+        url.isNotEmpty &&
+        (url.startsWith('http://') || url.startsWith('https://'))) {
       return Container(
         height: 230,
         width: double.infinity,
@@ -319,7 +368,8 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
         child: Image.network(
           url,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildPlaceholderImagen(titulo),
+          errorBuilder: (context, error, stackTrace) =>
+              _buildPlaceholderImagen(titulo),
         ),
       );
     }
@@ -332,7 +382,8 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
 
     if (titleLower.contains('libro') || titleLower.contains('manual')) {
       icono = Icons.menu_book_rounded;
-    } else if (titleLower.contains('herramienta') || titleLower.contains('taladro')) {
+    } else if (titleLower.contains('herramienta') ||
+        titleLower.contains('taladro')) {
       icono = Icons.build_rounded;
     } else if (titleLower.contains('ropa') || titleLower.contains('campera')) {
       icono = Icons.checkroom_rounded;
@@ -387,7 +438,8 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
           child: Text(
             'Nivel ${nivel['numero']}: ${nivel['nombre']}',
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppTheme.acentoVerdeEco, fontSize: 12),
+            style:
+                const TextStyle(color: AppTheme.acentoVerdeEco, fontSize: 12),
           ),
         ),
       ],
@@ -409,10 +461,19 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final oferenteId = (widget.item['oferente_id'] ?? widget.item['oferenteId'] ?? widget.item['usuario_id'] ?? '2').toString();
-    final oferenteNombre = widget.item['oferente_nombre'] ?? widget.item['oferenteNombre'] ?? 'Vecino/a';
-    final String? imagenUrl = widget.item['imagen_url'] ?? widget.item['imagenUrl'];
-    final String nivelEsfuerzo = widget.item['nivel_esfuerzo'] ?? widget.item['nivelEsfuerzo'] ?? 'SIMPLE';
+    final oferenteId = (widget.item['oferente_id'] ??
+            widget.item['oferenteId'] ??
+            widget.item['usuario_id'] ??
+            '2')
+        .toString();
+    final oferenteNombre = widget.item['oferente_nombre'] ??
+        widget.item['oferenteNombre'] ??
+        'Vecino/a';
+    final String? imagenUrl =
+        widget.item['imagen_url'] ?? widget.item['imagenUrl'];
+    final String nivelEsfuerzo = widget.item['nivel_esfuerzo'] ??
+        widget.item['nivelEsfuerzo'] ??
+        'SIMPLE';
     final Color colorEsfuerzo = _obtenerColorEsfuerzo(nivelEsfuerzo);
 
     return Scaffold(
@@ -434,7 +495,8 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
               _buildImagenHeader(imagenUrl, widget.item['titulo']),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: colorEsfuerzo.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
@@ -452,10 +514,12 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
                   onPressed: _mostrarDialogoSugerirEsfuerzo,
-                  icon: Icon(Icons.rate_review_outlined, size: 16, color: context.colorTextoSuave),
+                  icon: Icon(Icons.rate_review_outlined,
+                      size: 16, color: context.colorTextoSuave),
                   label: Text(
                     '¿Está mal clasificado? Sugerí el nivel correcto',
-                    style: TextStyle(color: context.colorTextoSuave, fontSize: 12),
+                    style:
+                        TextStyle(color: context.colorTextoSuave, fontSize: 12),
                   ),
                 ),
               ),
@@ -482,13 +546,18 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  widget.item['descripcion'] ?? 'Sin descripción detallada disponible.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4),
+                  widget.item['descripcion'] ??
+                      'Sin descripción detallada disponible.',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.copyWith(height: 1.4),
                 ),
               ),
               const SizedBox(height: 20),
               ListTile(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 tileColor: context.colorTarjeta,
                 leading: const CircleAvatar(
                   backgroundColor: AppTheme.acentoAzulTurquesa,
@@ -496,11 +565,13 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                 ),
                 title: Text(
                   'Ofrecido por $oferenteNombre',
-                  style: TextStyle(color: context.colorTexto, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: context.colorTexto, fontWeight: FontWeight.bold),
                 ),
                 subtitle: _buildSubtituloOferente(widget.item),
                 trailing: IconButton(
-                  icon: const Icon(Icons.chat_bubble_outline, color: AppTheme.acentoVerdeEco),
+                  icon: const Icon(Icons.chat_bubble_outline,
+                      color: AppTheme.acentoVerdeEco),
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(

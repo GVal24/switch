@@ -18,6 +18,7 @@ CREATE TABLE usuarios (
     rol VARCHAR(20) NOT NULL DEFAULT 'VECINO', -- 'VECINO', 'DELEGADO', 'ADMIN'
     activo BOOLEAN NOT NULL DEFAULT TRUE,      -- false => bloqueo permanente por administración
     suspendido_hasta TIMESTAMP NULL,           -- fecha de fin de suspensión temporal (NULL = sin suspensión)
+    motivo_suspension TEXT NULL,               -- por qué se suspendió (ej. hallazgo de posible imagen de menor)
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT chk_rol CHECK (rol IN ('VECINO', 'DELEGADO', 'ADMIN'))
@@ -90,10 +91,15 @@ CREATE TABLE publicaciones_p2p (
     nivel_esfuerzo VARCHAR(10) NOT NULL, -- 'SIMPLE', 'MEDIO', 'ALTO'
     tipo_item VARCHAR(20) NOT NULL DEFAULT 'GENERAL', -- 'GENERAL', 'OBJETO', 'SERVICIO'
     imagen_url TEXT,
-    estado VARCHAR(20) NOT NULL DEFAULT 'Activo', -- 'Activo', 'Pausado', 'Completado'
+    -- 'PENDIENTE_REVISION': la imagen fue screenshoteada y está en cuarentena
+    -- hasta que una persona la apruebe. No aparece en el catálogo público.
+    -- 'Activo', 'Pausado', 'Completado', 'Rechazada'
+    estado VARCHAR(30) NOT NULL DEFAULT 'PENDIENTE_REVISION',
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_nivel CHECK (nivel_esfuerzo IN ('SIMPLE', 'MEDIO', 'ALTO'))
+    CONSTRAINT chk_nivel CHECK (nivel_esfuerzo IN ('SIMPLE', 'MEDIO', 'ALTO')),
+    CONSTRAINT chk_estado_publicacion
+        CHECK (estado IN ('PENDIENTE_REVISION', 'Activo', 'Pausado', 'Completado', 'Rechazada'))
 );
 
 -- ------------------------------------------------------------
@@ -182,3 +188,114 @@ CREATE TABLE sugerencias_esfuerzo (
     -- Un mismo usuario no puede sugerir dos veces para la misma publicación
     CONSTRAINT uq_sugerencia_por_usuario UNIQUE (publicacion_id, usuario_id)
 );
+
+-- ------------------------------------------------------------
+-- 10. TABLA: verificaciones_otp
+--     Códigos de un solo uso para comprobar que el teléfono celular
+--     pertenece a quien se está registrando. El código NUNCA se guarda
+--     en claro: se almacena su HMAC-SHA256 con clave del servidor.
+--     Al consumirse queda marcado y no puede reutilizarse.
+-- ------------------------------------------------------------
+CREATE TABLE verificaciones_otp (
+    id SERIAL PRIMARY KEY,
+    telefono VARCHAR(20) NOT NULL,
+    proposito VARCHAR(30) NOT NULL,            -- 'REGISTRO' (único uso por ahora)
+    canal VARCHAR(10) NOT NULL,                -- canal por el que se envió
+    codigo_hash VARCHAR(64) NOT NULL,          -- HMAC-SHA256 del código
+    ip_origen VARCHAR(45) NULL,                -- freno de abuso por origen
+    intentos INT NOT NULL DEFAULT 0,           -- intentos fallidos acumulado
+    max_intentos INT NOT NULL DEFAULT 5,
+    expira_en TIMESTAMP NOT NULL,              -- vigencia del código
+    consumido_en TIMESTAMP NULL,               -- NULL = todavía sin usar
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_otp_proposito CHECK (proposito IN ('REGISTRO')),
+    CONSTRAINT chk_otp_canal CHECK (canal IN ('SMS', 'WHATSAPP'))
+);
+
+-- Búsqueda del código activo de un teléfono para un propósito dado
+CREATE INDEX idx_otp_telefono_proposito
+    ON verificaciones_otp (telefono, proposito, creado_en DESC);
+
+-- Purga periódica de códigos vencidos
+CREATE INDEX idx_otp_expira_en
+    ON verificaciones_otp (expira_en);
+
+-- ------------------------------------------------------------
+-- 11. TABLA: aceptaciones_legales
+--     Constancia de qué versión de cada documento aceptó la persona
+--     usuaria, cuándo y desde dónde. Sin esto no hay forma de probar
+--     que el consentimiento fue informado (ver Política de Privacidad).
+--     usuario_id es NULL porque el registro ocurre justo al crear la
+--     cuenta: primero se acepta, después se inserta el usuario.
+-- ------------------------------------------------------------
+CREATE TABLE aceptaciones_legales (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    documento VARCHAR(20) NOT NULL,            -- 'TERMINOS' | 'PRIVACIDAD'
+    version VARCHAR(20) NOT NULL,              -- versión del texto aceptado
+    hash_documento VARCHAR(64) NOT NULL,       -- SHA-256 del contenido servido
+    ip_origen VARCHAR(45) NULL,                -- X-Forwarded-For o req.ip
+    user_agent VARCHAR(255) NULL,
+    aceptado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_doc_aceptado CHECK (documento IN ('TERMINOS', 'PRIVACIDAD'))
+);
+
+CREATE INDEX idx_aceptaciones_usuario
+    ON aceptaciones_legales (usuario_id);
+
+-- ------------------------------------------------------------
+-- 12. TABLA: moderacion_imagenes
+--     Registro de cada imagen subida y del resultado del filtrado.
+--
+--     Decisión de diseño: el filtro automático NO puede determinar con
+--     fiabilidad si una persona es menor de edad (los modelos de edad se
+--     erran por años y fallan con fotos borrosas o de perfil). Por eso
+--     la aplicación no intenta adivinarlo: marca SIEMPRE la imagen para
+--     revisión humana y la publication queda en cuarentena, invisible
+--     para el catálogo público, hasta que alguien la apruebe.
+--
+--     El filtrado automático sí resuelve lo que el software detecta bien:
+--     formato real del archivo, dimensiones, peso, contenido animado y
+--     metadatos EXIF/GPS (que además es un riesgo de privacidad).
+-- ------------------------------------------------------------
+CREATE TABLE moderacion_imagenes (
+    id SERIAL PRIMARY KEY,
+    publicacion_id INT NULL REFERENCES publicaciones_p2p(id) ON DELETE CASCADE,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    nombre_archivo VARCHAR(255) NOT NULL,
+    mime_detectado VARCHAR(30) NULL,           -- leído de los bytes reales, no del enviado
+    peso_bytes INT NULL,
+
+    -- Resultado del filtrado técnico automático
+    filtro_estado VARCHAR(30) NOT NULL DEFAULT 'PENDIENTE',
+    filtro_puntaje INT NOT NULL DEFAULT 0,    -- 0 (limpio) a 100 (altamente sospechoso)
+    filtro_motivos JSONB NULL,                  -- lista de motivos del rechazo automático
+
+    -- Resultado de la revisión de una persona
+    revisado_por INT NULL REFERENCES usuarios(id) ON DELETE SET NULL,
+    revisado_en TIMESTAMP NULL,
+    decision VARCHAR(20) NULL,                -- 'APROBADA' | 'RECHAZADA'
+    motivo_rechazo VARCHAR(200) NULL,
+    contiene_menor BOOLEAN NOT NULL DEFAULT FALSE,  -- hallazgo de revisión humana
+
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_filtro_estado
+        CHECK (filtro_estado IN ('PENDIENTE', 'APROBADA_TECNICAMENTE', 'RECHAZADA_TECNICAMENTE', 'ERROR')),
+    CONSTRAINT chk_decision_moderacion
+        CHECK (decision IS NULL OR decision IN ('APROBADA', 'RECHAZADA'))
+);
+
+-- Cola de trabajo del panel de administración
+CREATE INDEX idx_moderacion_pendientes
+    ON moderacion_imagenes (filtro_estado, creado_en)
+    WHERE decision IS NULL;
+
+CREATE INDEX idx_moderacion_publicacion
+    ON moderacion_imagenes (publicacion_id);
+
+-- Evita que la misma imagen se procese dos veces por carrera
+CREATE UNIQUE INDEX idx_moderacion_archivo_unico
+    ON moderacion_imagenes (nombre_archivo);

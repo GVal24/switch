@@ -4,7 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 class GraficoTortaEsfuerzo extends StatelessWidget {
   final Map<String, dynamic> esfuerzoDistribucion;
 
-  const GraficoTortaEsfuerzo({Key? key, required this.esfuerzoDistribucion}) : super(key: key);
+  const GraficoTortaEsfuerzo({Key? key, required this.esfuerzoDistribucion})
+      : super(key: key);
 
   /// Helper para parsear cualquier tipo (int, double, String, null) a double de forma 100% segura
   double _toDoubleSeguro(dynamic valor) {
@@ -48,21 +49,30 @@ class GraficoTortaEsfuerzo extends StatelessWidget {
                   value: simple > 0 ? simple : 0.001,
                   title: '${simple.toStringAsFixed(0)}%',
                   radius: 45,
-                  titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                  titleStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
                 PieChartSectionData(
                   color: Colors.orange,
                   value: medio > 0 ? medio : 0.001,
                   title: '${medio.toStringAsFixed(0)}%',
                   radius: 45,
-                  titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                  titleStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
                 PieChartSectionData(
                   color: Colors.redAccent,
                   value: alto > 0 ? alto : 0.001,
                   title: '${alto.toStringAsFixed(0)}%',
                   radius: 45,
-                  titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                  titleStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ],
             ),
@@ -100,7 +110,8 @@ class _IndicadorLeyenda extends StatelessWidget {
           decoration: BoxDecoration(shape: BoxShape.circle, color: color),
         ),
         const SizedBox(width: 4),
-        Text(texto, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+        Text(texto,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
       ],
     );
   }

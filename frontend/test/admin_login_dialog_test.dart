@@ -6,7 +6,8 @@ import 'package:frontend/main.dart';
 import 'package:frontend/services/accesibilidad_service.dart';
 
 void main() {
-  testWidgets('Diálogo login admin con teclado: no debe lanzar "infinite width"',
+  testWidgets(
+      'Diálogo login admin con teclado: no debe lanzar "infinite width"',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     await AccesibilidadService.instancia.cargar();
@@ -66,7 +67,8 @@ void main() {
       debugPrint('ERROR CAPTURADO: $e');
     }
     expect(
-      errores.where((e) => e.contains('infinite width') || e.contains('BoxConstraints forces')),
+      errores.where((e) =>
+          e.contains('infinite width') || e.contains('BoxConstraints forces')),
       isEmpty,
       reason: 'Se reprodujo "BoxConstraints forces an infinite width":\n'
           '${errores.take(5).join('\n---\n')}',

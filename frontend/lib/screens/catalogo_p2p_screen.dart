@@ -80,7 +80,8 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
 
     if (titleLower.contains('libro') || titleLower.contains('manual')) {
       icono = Icons.menu_book_rounded;
-    } else if (titleLower.contains('herramienta') || titleLower.contains('taladro')) {
+    } else if (titleLower.contains('herramienta') ||
+        titleLower.contains('taladro')) {
       icono = Icons.build_rounded;
     } else if (titleLower.contains('ropa') || titleLower.contains('campera')) {
       icono = Icons.checkroom_rounded;
@@ -119,16 +120,20 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
 
   Widget _buildImagenTarjeta(Map<dynamic, dynamic> item) {
     final String? url = item['imagen_url'] ?? item['imagenUrl'];
-    final bool destacada = (item['autor_impacto']?['nivel']?['numero'] ?? 0) >= 4;
+    final bool destacada =
+        (item['autor_impacto']?['nivel']?['numero'] ?? 0) >= 4;
     Widget imagen;
-    if (url != null && url.isNotEmpty && (url.startsWith('http://') || url.startsWith('https://'))) {
+    if (url != null &&
+        url.isNotEmpty &&
+        (url.startsWith('http://') || url.startsWith('https://'))) {
       imagen = SizedBox(
         height: 140,
         width: double.infinity,
         child: Image.network(
           url,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildPlaceholderCategorizado(item['titulo']),
+          errorBuilder: (_, __, ___) =>
+              _buildPlaceholderCategorizado(item['titulo']),
         ),
       );
     } else {
@@ -148,12 +153,15 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
             decoration: BoxDecoration(
               color: Colors.amber.shade700,
               borderRadius: BorderRadius.circular(8),
-              boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 4)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black38, blurRadius: 4)
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.workspace_premium_rounded, size: 14, color: Colors.amber.shade50),
+                Icon(Icons.workspace_premium_rounded,
+                    size: 14, color: Colors.amber.shade50),
                 const SizedBox(width: 4),
                 Text(
                   'DESTACADA',
@@ -182,7 +190,8 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
           children: [
             LogoSwitchIsotipo(size: 34),
             SizedBox(width: 12),
-            Text('Switch', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+            Text('Switch',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
           ],
         ),
         actions: [
@@ -218,7 +227,8 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Catálogo de Intercambios', style: theme.textTheme.headlineLarge),
+              Text('Catálogo de Intercambios',
+                  style: theme.textTheme.headlineLarge),
               const SizedBox(height: 4),
               Text(
                   'Explorá lo que tu comunidad ofrece e intercambiá libremente.',
@@ -271,12 +281,18 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
                                   ? Icons.inventory_2_outlined
                                   : Icons.apps_rounded,
                           size: 16,
-                          color: seleccionado ? Colors.white : context.colorTextoSuave,
+                          color: seleccionado
+                              ? Colors.white
+                              : context.colorTextoSuave,
                         ),
                         label: Text(
-                          tipo == 'TODOS' ? 'Todo' : tipo[0] + tipo.substring(1).toLowerCase(),
+                          tipo == 'TODOS'
+                              ? 'Todo'
+                              : tipo[0] + tipo.substring(1).toLowerCase(),
                           style: TextStyle(
-                            color: seleccionado ? Colors.white : context.colorTextoSuave,
+                            color: seleccionado
+                                ? Colors.white
+                                : context.colorTextoSuave,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -308,7 +324,9 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
                         label: Text(
                           nivel == 'TODOS' ? 'Todos' : 'Nivel $nivel',
                           style: TextStyle(
-                            color: seleccionado ? Colors.white : context.colorTextoSuave,
+                            color: seleccionado
+                                ? Colors.white
+                                : context.colorTextoSuave,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -331,7 +349,9 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
 
               Expanded(
                 child: _cargando
-                    ? const Center(child: CircularProgressIndicator(color: AppTheme.acentoVerdeEco))
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                            color: AppTheme.acentoVerdeEco))
                     : RefreshIndicator(
                         onRefresh: _cargarCatalogo,
                         color: AppTheme.acentoVerdeEco,
@@ -339,9 +359,14 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
                           itemCount: _publicaciones.length,
                           itemBuilder: (ctx, idx) {
                             final item = _publicaciones[idx];
-                            final nivelEsfuerzo = item['nivel_esfuerzo'] ?? item['nivelEsfuerzo'] ?? 'SIMPLE';
-                            final oferenteNombre = item['oferente_nombre'] ?? item['oferenteNombre'] ?? 'Vecino/a';
-                            final colorEsfuerzo = _obtenerColorEsfuerzo(nivelEsfuerzo);
+                            final nivelEsfuerzo = item['nivel_esfuerzo'] ??
+                                item['nivelEsfuerzo'] ??
+                                'SIMPLE';
+                            final oferenteNombre = item['oferente_nombre'] ??
+                                item['oferenteNombre'] ??
+                                'Vecino/a';
+                            final colorEsfuerzo =
+                                _obtenerColorEsfuerzo(nivelEsfuerzo);
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 20),
@@ -361,10 +386,12 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => DetalleProductoScreen(
+                                      builder: (context) =>
+                                          DetalleProductoScreen(
                                         item: item,
                                         usuarioActualId: widget.usuarioActualId,
-                                        usuarioActualNombre: widget.usuarioActualNombre,
+                                        usuarioActualNombre:
+                                            widget.usuarioActualNombre,
                                       ),
                                     ),
                                   );
@@ -376,23 +403,33 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
                                     Padding(
                                       padding: const EdgeInsets.all(16.0),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 4),
                                                 decoration: BoxDecoration(
-                                                  color: colorEsfuerzo.withValues(alpha: 0.2),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  border: Border.all(color: colorEsfuerzo, width: 1.2),
+                                                  color: colorEsfuerzo
+                                                      .withValues(alpha: 0.2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                      color: colorEsfuerzo,
+                                                      width: 1.2),
                                                 ),
                                                 child: Text(
                                                   'Esfuerzo $nivelEsfuerzo',
                                                   style: TextStyle(
                                                       color: colorEsfuerzo,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       fontSize: 12),
                                                 ),
                                               ),
@@ -402,41 +439,76 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
                                                   Navigator.push(
                                                     context,
                                                     MaterialPageRoute(
-                                                      builder: (context) => PerfilScreen(
+                                                      builder: (context) =>
+                                                          PerfilScreen(
                                                         usuarioVisitado: {
-                                                          'id': (item['usuario_id'] ?? '').toString(),
-                                                          'nombre': oferenteNombre,
-                                                          'trueques': item['oferente_trueques'] ?? 0,
-                                                          'voluntariados': item['oferente_voluntariados'] ?? 0,
-                                                          'calificacion': item['oferente_calificacion'] ?? 0,
-                                                          'resenas': item['oferente_resenas'] ?? 0,
-                                                          'impacto': item['autor_impacto'],
+                                                          'id':
+                                                              (item['usuario_id'] ??
+                                                                      '')
+                                                                  .toString(),
+                                                          'nombre':
+                                                              oferenteNombre,
+                                                          'trueques': item[
+                                                                  'oferente_trueques'] ??
+                                                              0,
+                                                          'voluntariados': item[
+                                                                  'oferente_voluntariados'] ??
+                                                              0,
+                                                          'calificacion': item[
+                                                                  'oferente_calificacion'] ??
+                                                              0,
+                                                          'resenas': item[
+                                                                  'oferente_resenas'] ??
+                                                              0,
+                                                          'impacto': item[
+                                                              'autor_impacto'],
                                                         },
-                                                        onToggleAccesibilidad: widget.onToggleAccesibilidad,
-                                                        modoAccesibleActivo: widget.modoAccesibleActivo,
+                                                        onToggleAccesibilidad:
+                                                            widget
+                                                                .onToggleAccesibilidad,
+                                                        modoAccesibleActivo: widget
+                                                            .modoAccesibleActivo,
                                                       ),
                                                     ),
                                                   );
                                                 },
                                                 child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   children: [
-                                                    if ((item['autor_impacto']?['nivel']?['numero'] ?? 0) >= 3) ...[
+                                                    if ((item['autor_impacto']
+                                                                    ?['nivel']
+                                                                ?['numero'] ??
+                                                            0) >=
+                                                        3) ...[
                                                       Tooltip(
-                                                        message: item['autor_impacto']['nivel']['nombre'],
-                                                        child: const Icon(Icons.verified_rounded,
-                                                            color: AppTheme.acentoVerdeEco, size: 16),
+                                                        message: item[
+                                                                'autor_impacto']
+                                                            ['nivel']['nombre'],
+                                                        child: const Icon(
+                                                            Icons
+                                                                .verified_rounded,
+                                                            color: AppTheme
+                                                                .acentoVerdeEco,
+                                                            size: 16),
                                                       ),
                                                       const SizedBox(width: 4),
                                                     ],
-                                                    const Icon(Icons.person_pin, color: AppTheme.acentoVerdeEco, size: 16),
+                                                    const Icon(Icons.person_pin,
+                                                        color: AppTheme
+                                                            .acentoVerdeEco,
+                                                        size: 16),
                                                     const SizedBox(width: 4),
                                                     Text(
                                                       oferenteNombre,
                                                       style: const TextStyle(
-                                                        color: AppTheme.acentoVerdeEco,
-                                                        fontWeight: FontWeight.bold,
-                                                        decoration: TextDecoration.underline,
+                                                        color: AppTheme
+                                                            .acentoVerdeEco,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        decoration:
+                                                            TextDecoration
+                                                                .underline,
                                                         fontSize: 13,
                                                       ),
                                                     ),
@@ -446,25 +518,33 @@ class _CatalogoP2PScreenState extends State<CatalogoP2PScreen> {
                                             ],
                                           ),
                                           const SizedBox(height: 12),
-                                          Text(item['titulo'] ?? '', style: theme.textTheme.titleMedium),
+                                          Text(item['titulo'] ?? '',
+                                              style:
+                                                  theme.textTheme.titleMedium),
                                           const SizedBox(height: 6),
-                                          Text(item['descripcion'] ?? '', style: theme.textTheme.bodyLarge),
+                                          Text(item['descripcion'] ?? '',
+                                              style: theme.textTheme.bodyLarge),
                                           const SizedBox(height: 16),
                                           ElevatedButton.icon(
                                             onPressed: () {
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                  builder: (context) => DetalleProductoScreen(
+                                                  builder: (context) =>
+                                                      DetalleProductoScreen(
                                                     item: item,
-                                                    usuarioActualId: widget.usuarioActualId,
-                                                    usuarioActualNombre: widget.usuarioActualNombre,
+                                                    usuarioActualId:
+                                                        widget.usuarioActualId,
+                                                    usuarioActualNombre: widget
+                                                        .usuarioActualNombre,
                                                   ),
                                                 ),
                                               );
                                             },
-                                            icon: const Icon(Icons.chat_bubble_outline_rounded),
-                                            label: const Text('SOLICITAR INTERCAMBIO'),
+                                            icon: const Icon(Icons
+                                                .chat_bubble_outline_rounded),
+                                            label: const Text(
+                                                'SOLICITAR INTERCAMBIO'),
                                           ),
                                         ],
                                       ),

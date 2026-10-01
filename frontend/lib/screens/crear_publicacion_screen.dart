@@ -57,7 +57,8 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
       setState(() => _esfuerzoEstimado = '');
       return;
     }
-    _debounceClasificador = Timer(const Duration(milliseconds: 600), _clasificarAhora);
+    _debounceClasificador =
+        Timer(const Duration(milliseconds: 600), _clasificarAhora);
   }
 
   Future<void> _clasificarAhora() async {
@@ -87,7 +88,9 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo abrir la galería/cámara.'), backgroundColor: Colors.redAccent),
+        const SnackBar(
+            content: Text('No se pudo abrir la galería/cámara.'),
+            backgroundColor: Colors.redAccent),
       );
     }
   }
@@ -126,7 +129,8 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
     if (resultado['exito'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(resultado['mensaje'] ?? '¡Publicación creada con éxito!'),
+          content:
+              Text(resultado['mensaje'] ?? '¡Publicación creada con éxito!'),
           backgroundColor: AppTheme.acentoVerdeEco,
         ),
       );
@@ -175,10 +179,14 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
                   decoration: InputDecoration(
                     labelText: '¿Qué ofrecés?',
                     labelStyle: TextStyle(color: context.colorTextoSuave),
-                    hintText: 'Ej: Bicicleta rodado 26 / Clases de apoyo de matemática',
-                    hintStyle: TextStyle(color: context.colorTextoSuave.withValues(alpha: 0.5)),
+                    hintText:
+                        'Ej: Bicicleta rodado 26 / Clases de apoyo de matemática',
+                    hintStyle: TextStyle(
+                        color: context.colorTextoSuave.withValues(alpha: 0.5)),
                   ),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Contanos qué ofrecés' : null,
+                  validator: (v) => v == null || v.trim().isEmpty
+                      ? 'Contanos qué ofrecés'
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -189,27 +197,38 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
                   decoration: InputDecoration(
                     labelText: 'Descripción',
                     labelStyle: TextStyle(color: context.colorTextoSuave),
-                    hintText: 'Detallá estado, días, horarios o lo que sea útil...',
-                    hintStyle: TextStyle(color: context.colorTextoSuave.withValues(alpha: 0.5)),
+                    hintText:
+                        'Detallá estado, días, horarios o lo que sea útil...',
+                    hintStyle: TextStyle(
+                        color: context.colorTextoSuave.withValues(alpha: 0.5)),
                   ),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Agregá una descripción' : null,
+                  validator: (v) => v == null || v.trim().isEmpty
+                      ? 'Agregá una descripción'
+                      : null,
                 ),
                 const SizedBox(height: 16),
 
-                Text('Es un...', style: TextStyle(color: context.colorTextoSuave, fontSize: 13)),
+                Text('Es un...',
+                    style: TextStyle(
+                        color: context.colorTextoSuave, fontSize: 13)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
                       child: ChoiceChip(
                         avatar: Icon(Icons.inventory_2_outlined,
-                            size: 18, color: _tipoItem == 'OBJETO' ? Colors.white : context.colorTextoSuave),
+                            size: 18,
+                            color: _tipoItem == 'OBJETO'
+                                ? Colors.white
+                                : context.colorTextoSuave),
                         label: const Text('Objeto'),
                         selected: _tipoItem == 'OBJETO',
                         selectedColor: AppTheme.acentoVerdeEco,
                         backgroundColor: context.colorTarjeta,
                         labelStyle: TextStyle(
-                          color: _tipoItem == 'OBJETO' ? Colors.white : context.colorTextoSuave,
+                          color: _tipoItem == 'OBJETO'
+                              ? Colors.white
+                              : context.colorTextoSuave,
                           fontWeight: FontWeight.bold,
                         ),
                         onSelected: (_) {
@@ -222,13 +241,18 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
                     Expanded(
                       child: ChoiceChip(
                         avatar: Icon(Icons.handyman_rounded,
-                            size: 18, color: _tipoItem == 'SERVICIO' ? Colors.white : context.colorTextoSuave),
+                            size: 18,
+                            color: _tipoItem == 'SERVICIO'
+                                ? Colors.white
+                                : context.colorTextoSuave),
                         label: const Text('Servicio'),
                         selected: _tipoItem == 'SERVICIO',
                         selectedColor: AppTheme.acentoVerdeEco,
                         backgroundColor: context.colorTarjeta,
                         labelStyle: TextStyle(
-                          color: _tipoItem == 'SERVICIO' ? Colors.white : context.colorTextoSuave,
+                          color: _tipoItem == 'SERVICIO'
+                              ? Colors.white
+                              : context.colorTextoSuave,
                           fontWeight: FontWeight.bold,
                         ),
                         onSelected: (_) {
@@ -248,29 +272,39 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
                   decoration: BoxDecoration(
                     color: context.colorTarjeta,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.colorTextoSuave.withValues(alpha: 0.15)),
+                    border: Border.all(
+                        color: context.colorTextoSuave.withValues(alpha: 0.15)),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.auto_awesome_rounded,
-                          color: _esfuerzoEstimado.isEmpty ? context.colorTextoSuave : _colorEsfuerzo(_esfuerzoEstimado),
+                          color: _esfuerzoEstimado.isEmpty
+                              ? context.colorTextoSuave
+                              : _colorEsfuerzo(_esfuerzoEstimado),
                           size: 22),
                       const SizedBox(width: 10),
                       Expanded(
                         child: _esfuerzoEstimado.isEmpty
                             ? Text(
                                 'El nivel de esfuerzo se calcula solo según lo que ofrezcas.',
-                                style: TextStyle(color: context.colorTextoSuave, fontSize: 13),
+                                style: TextStyle(
+                                    color: context.colorTextoSuave,
+                                    fontSize: 13),
                               )
                             : RichText(
                                 text: TextSpan(
-                                  style: TextStyle(color: context.colorTextoSuave, fontSize: 13),
+                                  style: TextStyle(
+                                      color: context.colorTextoSuave,
+                                      fontSize: 13),
                                   children: [
                                     const TextSpan(text: 'Esfuerzo estimado: '),
                                     TextSpan(
-                                      text: _clasificando ? '...' : _esfuerzoEstimado,
+                                      text: _clasificando
+                                          ? '...'
+                                          : _esfuerzoEstimado,
                                       style: TextStyle(
-                                        color: _colorEsfuerzo(_esfuerzoEstimado),
+                                        color:
+                                            _colorEsfuerzo(_esfuerzoEstimado),
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
                                       ),
@@ -280,14 +314,19 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
                               ),
                       ),
                       if (_clasificando)
-                        const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                        const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2)),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // Foto desde el dispositivo
-                Text('Foto (opcional)', style: TextStyle(color: context.colorTextoSuave, fontSize: 13)),
+                Text('Foto (opcional)',
+                    style: TextStyle(
+                        color: context.colorTextoSuave, fontSize: 13)),
                 const SizedBox(height: 8),
                 if (_imagenElegida != null)
                   Stack(
@@ -308,8 +347,10 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
                           radius: 18,
                           backgroundColor: Colors.black54,
                           child: IconButton(
-                            icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white),
-                            onPressed: () => setState(() => _imagenElegida = null),
+                            icon: const Icon(Icons.close_rounded,
+                                size: 18, color: Colors.white),
+                            onPressed: () =>
+                                setState(() => _imagenElegida = null),
                           ),
                         ),
                       ),
@@ -320,18 +361,22 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          icon: const Icon(Icons.photo_library_outlined, size: 20),
+                          icon: const Icon(Icons.photo_library_outlined,
+                              size: 20),
                           label: const Text('GALERÍA'),
-                          style: OutlinedButton.styleFrom(foregroundColor: AppTheme.acentoAzulTurquesa),
+                          style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.acentoAzulTurquesa),
                           onPressed: () => _elegirImagen(ImageSource.gallery),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: OutlinedButton.icon(
-                          icon: const Icon(Icons.photo_camera_outlined, size: 20),
+                          icon:
+                              const Icon(Icons.photo_camera_outlined, size: 20),
                           label: const Text('CÁMARA'),
-                          style: OutlinedButton.styleFrom(foregroundColor: AppTheme.acentoAzulTurquesa),
+                          style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.acentoAzulTurquesa),
                           onPressed: () => _elegirImagen(ImageSource.camera),
                         ),
                       ),
@@ -344,7 +389,11 @@ class _CrearPublicacionScreenState extends State<CrearPublicacionScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _cargando ? null : _guardarPublicacion,
                     icon: _cargando
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
                         : const Icon(Icons.publish_rounded),
                     label: Text(_cargando ? 'PUBLICANDO...' : 'PUBLICAR AHORA'),
                   ),

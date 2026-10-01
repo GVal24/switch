@@ -26,13 +26,17 @@ class CatalogoService {
       final uri = Uri.parse('${ApiService.baseUrl}/catalogo').replace(
         queryParameters: params.isNotEmpty ? params : null,
       );
-      final res = await http.get(uri, headers: await AuthService.construirHeaders());
+      final res =
+          await http.get(uri, headers: await AuthService.construirHeaders());
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
         if (decoded is List) {
           return decoded;
         } else if (decoded is Map) {
-          return decoded['datos'] ?? decoded['catalogo'] ?? decoded['publicaciones'] ?? [];
+          return decoded['datos'] ??
+              decoded['catalogo'] ??
+              decoded['publicaciones'] ??
+              [];
         }
       }
     } catch (e) {
@@ -72,30 +76,42 @@ class CatalogoService {
       raf.closeSync();
 
       if (bytes.length >= 3 &&
-          bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+          bytes[0] == 0xFF &&
+          bytes[1] == 0xD8 &&
+          bytes[2] == 0xFF) {
         return 'image/jpeg';
       }
       if (bytes.length >= 8 &&
-          bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E &&
+          bytes[0] == 0x89 &&
+          bytes[1] == 0x50 &&
+          bytes[2] == 0x4E &&
           bytes[3] == 0x47) {
         return 'image/png';
       }
       if (bytes.length >= 12 &&
-          bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 &&
+          bytes[0] == 0x52 &&
+          bytes[1] == 0x49 &&
+          bytes[2] == 0x46 &&
           bytes[3] == 0x46 &&
-          bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 &&
+          bytes[8] == 0x57 &&
+          bytes[9] == 0x45 &&
+          bytes[10] == 0x42 &&
           bytes[11] == 0x50) {
         return 'image/webp';
       }
       if (bytes.length >= 3 &&
-          bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+          bytes[0] == 0x47 &&
+          bytes[1] == 0x49 &&
+          bytes[2] == 0x46) {
         return 'image/gif';
       }
       if (bytes.length >= 4 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
         return 'image/bmp';
       }
       if (bytes.length >= 12 &&
-          (bytes[4] == 0x66 && bytes[5] == 0x74 && bytes[6] == 0x79 &&
+          (bytes[4] == 0x66 &&
+              bytes[5] == 0x74 &&
+              bytes[6] == 0x79 &&
               bytes[7] == 0x70)) {
         return 'image/heic';
       }
@@ -110,7 +126,11 @@ class CatalogoService {
     try {
       final mime = _detectarMime(archivo);
       if (!mime.startsWith('image/')) {
-        return {'exito': false, 'url': null, 'mensaje': 'El archivo no es una imagen válida.'};
+        return {
+          'exito': false,
+          'url': null,
+          'mensaje': 'El archivo no es una imagen válida.'
+        };
       }
       final request = http.MultipartRequest(
         'POST',
@@ -125,18 +145,24 @@ class CatalogoService {
         ),
       );
 
-      final streamed = await request.send().timeout(const Duration(seconds: 30));
+      final streamed =
+          await request.send().timeout(const Duration(seconds: 30));
       final res = await http.Response.fromStream(streamed);
       final decoded = jsonDecode(res.body);
 
       return {
-        'exito': (res.statusCode == 201 || res.statusCode == 200) && decoded['exito'] == true,
+        'exito': (res.statusCode == 201 || res.statusCode == 200) &&
+            decoded['exito'] == true,
         'url': decoded['datos']?['url'],
         'mensaje': decoded['mensaje'] ?? 'No se pudo subir la imagen.',
       };
     } catch (e) {
       print('Error en subirImagen: $e');
-      return {'exito': false, 'url': null, 'mensaje': 'Error de conexión al subir la imagen.'};
+      return {
+        'exito': false,
+        'url': null,
+        'mensaje': 'Error de conexión al subir la imagen.'
+      };
     }
   }
 
@@ -227,13 +253,15 @@ class CatalogoService {
   }) async {
     try {
       final res = await http.post(
-        Uri.parse('${ApiService.baseUrl}/catalogo/$publicacionId/sugerir-esfuerzo'),
+        Uri.parse(
+            '${ApiService.baseUrl}/catalogo/$publicacionId/sugerir-esfuerzo'),
         headers: await AuthService.construirHeaders(),
         body: jsonEncode({'nivelSugerido': nivelSugerido}),
       );
       final decoded = jsonDecode(res.body);
       return {
-        'exito': (res.statusCode == 200 || res.statusCode == 201) && decoded['exito'] == true,
+        'exito': (res.statusCode == 200 || res.statusCode == 201) &&
+            decoded['exito'] == true,
         'mensaje': decoded['mensaje'] ?? 'No se pudo enviar la sugerencia.',
       };
     } catch (e) {
@@ -263,10 +291,12 @@ class CatalogoService {
     return null;
   }
 
-  static Future<Map<String, dynamic>> responderPropuesta(String intercambioId, String estado) async {
+  static Future<Map<String, dynamic>> responderPropuesta(
+      String intercambioId, String estado) async {
     try {
       final res = await http.post(
-        Uri.parse('${ApiService.baseUrl}/intercambios/$intercambioId/responder'),
+        Uri.parse(
+            '${ApiService.baseUrl}/intercambios/$intercambioId/responder'),
         headers: await AuthService.construirHeaders(),
         body: jsonEncode({'estado': estado}),
       );
@@ -289,10 +319,12 @@ class CatalogoService {
     try {
       final body = <String, dynamic>{};
       if (puntaje != null) body['puntaje'] = puntaje;
-      if (comentario != null && comentario.trim().isNotEmpty) body['comentario'] = comentario.trim();
+      if (comentario != null && comentario.trim().isNotEmpty)
+        body['comentario'] = comentario.trim();
 
       final res = await http.post(
-        Uri.parse('${ApiService.baseUrl}/intercambios/$intercambioId/confirmar'),
+        Uri.parse(
+            '${ApiService.baseUrl}/intercambios/$intercambioId/confirmar'),
         headers: await AuthService.construirHeaders(),
         body: jsonEncode(body),
       );

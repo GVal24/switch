@@ -43,7 +43,8 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
     final lista = await ApiService.obtenerInstituciones();
 
     for (var inst in lista) {
-      final cupos = await ApiService.obtenerCuposPorInstitucion(inst['id'].toString());
+      final cupos =
+          await ApiService.obtenerCuposPorInstitucion(inst['id'].toString());
       inst['cupos'] = cupos;
     }
 
@@ -56,11 +57,13 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
 
   // 🟢 Abre la cámara para escanear el QR físico de la institución y valida
   // la presencia con el GPS real del teléfono. Devuelve true si se activó.
-  Future<bool> _validarPresencia(Map<String, dynamic> inst, Map<String, dynamic>? cupo) async {
+  Future<bool> _validarPresencia(
+      Map<String, dynamic> inst, Map<String, dynamic>? cupo) async {
     final String? qrHash = await Navigator.push<String>(
       context,
       MaterialPageRoute(
-        builder: (_) => QrScannerScreen(nombreInstitucion: inst['nombre'] ?? 'la institución'),
+        builder: (_) => QrScannerScreen(
+            nombreInstitucion: inst['nombre'] ?? 'la institución'),
       ),
     );
     if (!mounted || qrHash == null || qrHash.trim().isEmpty) return false;
@@ -86,8 +89,10 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(res['mensaje'] ?? 'Voluntariado y geolocalización validados con éxito.'),
-        backgroundColor: res['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
+        content: Text(res['mensaje'] ??
+            'Voluntariado y geolocalización validados con éxito.'),
+        backgroundColor:
+            res['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
       ),
     );
     return res['exito'] == true;
@@ -96,23 +101,24 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
   // 🟢 Valida presencia general (habilita a publicar en el catálogo).
   // Si la institución tiene varias necesidades activas, ofrece elegir cuál
   // cubrir exactamente (así solo se descuenta esa), o seguir de forma general.
-  Future<void> _escanearQRValidarGeolocalizacion(Map<String, dynamic> inst) async {
+  Future<void> _escanearQRValidarGeolocalizacion(
+      Map<String, dynamic> inst) async {
     final String? qrHash = await Navigator.push<String>(
       context,
       MaterialPageRoute(
-        builder: (_) => QrScannerScreen(nombreInstitucion: inst['nombre'] ?? 'la institución'),
+        builder: (_) => QrScannerScreen(
+            nombreInstitucion: inst['nombre'] ?? 'la institución'),
       ),
     );
     if (!mounted || qrHash == null || qrHash.trim().isEmpty) return;
 
     // Necesidades activas de la institución (algunas pueden estar cubiertas)
-    final List<dynamic> cupos = ((inst['cupos'] as List<dynamic>?) ?? [])
-        .where((c) {
-          final int max = c['cupo_maximo'] ?? c['cupoMaximo'] ?? 1;
-          final int actual = c['cupo_actual'] ?? c['cupoActual'] ?? 0;
-          return actual < max;
-        })
-        .toList();
+    final List<dynamic> cupos =
+        ((inst['cupos'] as List<dynamic>?) ?? []).where((c) {
+      final int max = c['cupo_maximo'] ?? c['cupoMaximo'] ?? 1;
+      final int actual = c['cupo_actual'] ?? c['cupoActual'] ?? 0;
+      return actual < max;
+    }).toList();
 
     // Si hay varias, mostramos un selector para que elija UNA sola y así no
     // se le suma una ayuda a todas por error.
@@ -130,9 +136,8 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
     }
 
     // Una sola necesidad (o ninguna): validación directa.
-    final Map<String, dynamic>? cupoUnico = cupos.length == 1
-        ? Map<String, dynamic>.from(cupos.first)
-        : null;
+    final Map<String, dynamic>? cupoUnico =
+        cupos.length == 1 ? Map<String, dynamic>.from(cupos.first) : null;
     await _validarPresencia(inst, cupoUnico);
   }
 
@@ -157,13 +162,17 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                 Text(
                   '¿Qué necesidad vas a cubrir en ${inst['nombre'] ?? 'la institución'}?',
                   textAlign: TextAlign.center,
-                  style: Theme.of(ctx).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(ctx)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Elegí UNA — solo se sumará la ayuda a esa necesidad.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: context.colorTextoSuave, fontSize: 13),
+                  style:
+                      TextStyle(color: context.colorTextoSuave, fontSize: 13),
                 ),
                 const SizedBox(height: 16),
                 Flexible(
@@ -171,13 +180,16 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                     shrinkWrap: true,
                     children: [
                       ...cupos.map((cupo) {
-                        final String prioridad = (cupo['prioridad'] ?? 'GENERAL').toString();
+                        final String prioridad =
+                            (cupo['prioridad'] ?? 'GENERAL').toString();
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: context.colorTextoSuave.withValues(alpha: 0.2)),
+                              side: BorderSide(
+                                  color: context.colorTextoSuave
+                                      .withValues(alpha: 0.2)),
                             ),
                             title: Text(cupo['titulo'] ?? ''),
                             subtitle: Text(prioridad == 'URGENTE'
@@ -186,8 +198,12 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                                     ? 'Necesidad prioritaria'
                                     : 'Prioridad general'),
                             leading: Icon(
-                              prioridad == 'URGENTE' ? Icons.priority_high_rounded : Icons.volunteer_activism_rounded,
-                              color: prioridad == 'URGENTE' ? Colors.redAccent : AppTheme.acentoAzulTurquesa,
+                              prioridad == 'URGENTE'
+                                  ? Icons.priority_high_rounded
+                                  : Icons.volunteer_activism_rounded,
+                              color: prioridad == 'URGENTE'
+                                  ? Colors.redAccent
+                                  : AppTheme.acentoAzulTurquesa,
                             ),
                             onTap: () => Navigator.pop(ctx, cupo),
                           ),
@@ -198,9 +214,11 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        leading: const Icon(Icons.shield_outlined, color: AppTheme.acentoVerdeEco),
+                        leading: const Icon(Icons.shield_outlined,
+                            color: AppTheme.acentoVerdeEco),
                         title: const Text('Solo activar habilitación'),
-                        subtitle: const Text('Validar presencia sin asociar a una necesidad concreta'),
+                        subtitle: const Text(
+                            'Validar presencia sin asociar a una necesidad concreta'),
                         onTap: () => Navigator.pop(ctx, {'_general': true}),
                       ),
                     ],
@@ -216,7 +234,8 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
 
   // 🟢 Ofrece ayuda concreta a una necesidad: escanea el QR de la institución
   // y descuenta el cupo correspondiente.
-  Future<void> _ofrecerAyuda(Map<String, dynamic> inst, Map<String, dynamic> cupo) async {
+  Future<void> _ofrecerAyuda(
+      Map<String, dynamic> inst, Map<String, dynamic> cupo) async {
     final exito = await _validarPresencia(inst, cupo);
     if (exito) await _cargarInstituciones();
   }
@@ -285,15 +304,21 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                         : AppTheme.acentoNaranja.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: _nexoActivo ? AppTheme.acentoVerdeEco : AppTheme.acentoNaranja,
+                      color: _nexoActivo
+                          ? AppTheme.acentoVerdeEco
+                          : AppTheme.acentoNaranja,
                       width: 1.2,
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(
-                        _nexoActivo ? Icons.check_circle_outline : Icons.info_outline,
-                        color: _nexoActivo ? AppTheme.acentoVerdeEco : AppTheme.acentoNaranja,
+                        _nexoActivo
+                            ? Icons.check_circle_outline
+                            : Icons.info_outline,
+                        color: _nexoActivo
+                            ? AppTheme.acentoVerdeEco
+                            : AppTheme.acentoNaranja,
                         size: 32,
                       ),
                       const SizedBox(width: 12),
@@ -302,9 +327,13 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _nexoActivo ? 'Habilitación ACTIVA' : 'Habilitación INACTIVA',
+                              _nexoActivo
+                                  ? 'Habilitación ACTIVA'
+                                  : 'Habilitación INACTIVA',
                               style: theme.textTheme.titleMedium?.copyWith(
-                                color: _nexoActivo ? AppTheme.acentoVerdeEco : AppTheme.acentoNaranja,
+                                color: _nexoActivo
+                                    ? AppTheme.acentoVerdeEco
+                                    : AppTheme.acentoNaranja,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -327,33 +356,45 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    Text('Instituciones Adheridas', style: theme.textTheme.headlineLarge),
+                    Text('Instituciones Adheridas',
+                        style: theme.textTheme.headlineLarge),
                     TextButton.icon(
                       onPressed: () async {
                         final registro = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const RegistroInstitucionScreen(),
+                            builder: (context) =>
+                                const RegistroInstitucionScreen(),
                           ),
                         );
                         if (registro == true) _cargarInstituciones();
                       },
-                      icon: const Icon(Icons.add_business_rounded, size: 18, color: AppTheme.acentoVerdeEco),
+                      icon: const Icon(Icons.add_business_rounded,
+                          size: 18, color: AppTheme.acentoVerdeEco),
                       label: const Text(
                         '¿Sos una institución?',
-                        style: TextStyle(color: AppTheme.acentoVerdeEco, fontWeight: FontWeight.w600, fontSize: 13),
+                        style: TextStyle(
+                            color: AppTheme.acentoVerdeEco,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('Coordiná un día y horario por chat o escaneá el QR al presentarte.', style: theme.textTheme.bodyMedium),
+                Text(
+                    'Coordiná un día y horario por chat o escaneá el QR al presentarte.',
+                    style: theme.textTheme.bodyMedium),
                 const SizedBox(height: 16),
 
                 if (_cargando)
-                  const Center(child: CircularProgressIndicator(color: AppTheme.acentoVerdeEco))
+                  const Center(
+                      child: CircularProgressIndicator(
+                          color: AppTheme.acentoVerdeEco))
                 else if (_instituciones.isEmpty)
-                  const Center(child: Text('No hay instituciones disponibles en este momento.'))
+                  const Center(
+                      child: Text(
+                          'No hay instituciones disponibles en este momento.'))
                 else
                   ..._instituciones.map((inst) {
                     final cupos = (inst['cupos'] as List<dynamic>?) ?? [];
@@ -379,40 +420,58 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
-                                child: Text(inst['nombre'] ?? '', style: theme.textTheme.titleMedium),
+                                child: Text(inst['nombre'] ?? '',
+                                    style: theme.textTheme.titleMedium),
                               ),
                               // 🟢 Botón de Chat para acordar día y horario con la institución
                               IconButton(
-                                icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppTheme.acentoVerdeEco),
+                                icon: const Icon(
+                                    Icons.chat_bubble_outline_rounded,
+                                    color: AppTheme.acentoVerdeEco),
                                 tooltip: 'Coordinar día y horario',
-                                onPressed: () => _abrirChatInstitucion(inst, null),
+                                onPressed: () =>
+                                    _abrirChatInstitucion(inst, null),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '📍 ${inst['direccion']} • ${inst['tipo']}',
-                            style: TextStyle(color: context.colorTextoSuave, fontSize: 13),
+                            style: TextStyle(
+                                color: context.colorTextoSuave, fontSize: 13),
                           ),
-                          Divider(height: 24, color: context.colorTextoSuave.withValues(alpha: 0.25)),
-
-                          Text('Necesidades Activas:', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                          Divider(
+                              height: 24,
+                              color: context.colorTextoSuave
+                                  .withValues(alpha: 0.25)),
+                          Text('Necesidades Activas:',
+                              style: theme.textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
-
                           if (cupos.isEmpty)
-                            Text('No hay cupos de necesidad abiertos por el momento.', style: TextStyle(color: context.colorTextoSuave))
+                            Text(
+                                'No hay cupos de necesidad abiertos por el momento.',
+                                style:
+                                    TextStyle(color: context.colorTextoSuave))
                           else
                             ...cupos.map((cupo) {
-                              final int max = cupo['cupo_maximo'] ?? cupo['cupoMaximo'] ?? 1;
-                              final int actual = cupo['cupo_actual'] ?? cupo['cupoActual'] ?? 0;
+                              final int max = cupo['cupo_maximo'] ??
+                                  cupo['cupoMaximo'] ??
+                                  1;
+                              final int actual = cupo['cupo_actual'] ??
+                                  cupo['cupoActual'] ??
+                                  0;
                               final bool estaCompleto = actual >= max;
-                              final double progreso = (actual / max).clamp(0.0, 1.0);
-                              final String prioridad = (cupo['prioridad'] ?? 'GENERAL').toString();
-                              final Color colorPrioridad = prioridad == 'URGENTE'
-                                  ? Colors.redAccent
-                                  : prioridad == 'PRIORITARIA'
-                                      ? Colors.orange
-                                      : Colors.grey;
+                              final double progreso =
+                                  (actual / max).clamp(0.0, 1.0);
+                              final String prioridad =
+                                  (cupo['prioridad'] ?? 'GENERAL').toString();
+                              final Color colorPrioridad =
+                                  prioridad == 'URGENTE'
+                                      ? Colors.redAccent
+                                      : prioridad == 'PRIORITARIA'
+                                          ? Colors.orange
+                                          : Colors.grey;
 
                               return Container(
                                 margin: const EdgeInsets.only(top: 10),
@@ -421,52 +480,79 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                                   color: context.colorFondo,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: estaCompleto ? context.colorTextoSuave.withValues(alpha: 0.2) : AppTheme.acentoAzulTurquesa.withValues(alpha: 0.3),
+                                    color: estaCompleto
+                                        ? context.colorTextoSuave
+                                            .withValues(alpha: 0.2)
+                                        : AppTheme.acentoAzulTurquesa
+                                            .withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
                                             cupo['titulo'] ?? '',
-                                            style: theme.textTheme.bodyLarge?.copyWith(
+                                            style: theme.textTheme.bodyLarge
+                                                ?.copyWith(
                                               fontWeight: FontWeight.w600,
-                                              decoration: estaCompleto ? TextDecoration.lineThrough : null,
+                                              decoration: estaCompleto
+                                                  ? TextDecoration.lineThrough
+                                                  : null,
                                             ),
                                           ),
                                         ),
                                         // 🟢 Ícono para acordar ayuda puntual en esta oferta/necesidad
                                         IconButton(
                                           constraints: const BoxConstraints(),
-                                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                                          icon: const Icon(Icons.handshake_outlined, color: AppTheme.acentoAzulTurquesa, size: 22),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6),
+                                          icon: const Icon(
+                                              Icons.handshake_outlined,
+                                              color:
+                                                  AppTheme.acentoAzulTurquesa,
+                                              size: 22),
                                           tooltip: 'Coordinar esta ayuda',
-                                          onPressed: () => _abrirChatInstitucion(inst, cupo['titulo']),
+                                          onPressed: () =>
+                                              _abrirChatInstitucion(
+                                                  inst, cupo['titulo']),
                                         ),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: estaCompleto ? Colors.grey : AppTheme.acentoAzulTurquesa,
-                                            borderRadius: BorderRadius.circular(6),
+                                            color: estaCompleto
+                                                ? Colors.grey
+                                                : AppTheme.acentoAzulTurquesa,
+                                            borderRadius:
+                                                BorderRadius.circular(6),
                                           ),
                                           child: Text(
-                                            estaCompleto ? 'COMPLETO' : '$actual/$max',
-                                            style: TextStyle(color: context.colorTexto, fontSize: 12, fontWeight: FontWeight.bold),
+                                            estaCompleto
+                                                ? 'COMPLETO'
+                                                : '$actual/$max',
+                                            style: TextStyle(
+                                                color: context.colorTexto,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 6),
-                                    Text(cupo['descripcion'] ?? '', style: theme.textTheme.bodyMedium),
+                                    Text(cupo['descripcion'] ?? '',
+                                        style: theme.textTheme.bodyMedium),
                                     const SizedBox(height: 8),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
-                                        color: colorPrioridad.withValues(alpha: 0.15),
+                                        color: colorPrioridad.withValues(
+                                            alpha: 0.15),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Row(
@@ -477,7 +563,8 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                                                 ? Icons.priority_high_rounded
                                                 : prioridad == 'PRIORITARIA'
                                                     ? Icons.low_priority_rounded
-                                                    : Icons.check_circle_outline_rounded,
+                                                    : Icons
+                                                        .check_circle_outline_rounded,
                                             size: 14,
                                             color: colorPrioridad,
                                           ),
@@ -486,7 +573,10 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                                             prioridad == 'GENERAL'
                                                 ? 'Prioridad general'
                                                 : 'Necesidad ${prioridad == 'URGENTE' ? 'urgente' : 'prioritaria'}',
-                                            style: TextStyle(color: colorPrioridad, fontSize: 12, fontWeight: FontWeight.w600),
+                                            style: TextStyle(
+                                                color: colorPrioridad,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600),
                                           ),
                                         ],
                                       ),
@@ -497,8 +587,11 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                                       child: LinearProgressIndicator(
                                         value: progreso,
                                         minHeight: 8,
-                                        backgroundColor: context.colorTextoSuave.withValues(alpha: 0.15),
-                                        color: estaCompleto ? Colors.grey : AppTheme.acentoVerdeEco,
+                                        backgroundColor: context.colorTextoSuave
+                                            .withValues(alpha: 0.15),
+                                        color: estaCompleto
+                                            ? Colors.grey
+                                            : AppTheme.acentoVerdeEco,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -506,26 +599,38 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                                       SizedBox(
                                         width: double.infinity,
                                         child: OutlinedButton.icon(
-                                          icon: const Icon(Icons.volunteer_activism_rounded, size: 18),
+                                          icon: const Icon(
+                                              Icons.volunteer_activism_rounded,
+                                              size: 18),
                                           label: const Text('OFRECER AYUDA'),
                                           style: OutlinedButton.styleFrom(
-                                            foregroundColor: AppTheme.acentoVerdeEco,
-                                            side: const BorderSide(color: AppTheme.acentoVerdeEco),
-                                            minimumSize: const Size(double.infinity, 40),
+                                            foregroundColor:
+                                                AppTheme.acentoVerdeEco,
+                                            side: const BorderSide(
+                                                color: AppTheme.acentoVerdeEco),
+                                            minimumSize:
+                                                const Size(double.infinity, 40),
                                           ),
                                           onPressed: _cargando
                                               ? null
-                                              : () => _ofrecerAyuda(inst, Map<String, dynamic>.from(cupo)),
+                                              : () => _ofrecerAyuda(
+                                                  inst,
+                                                  Map<String, dynamic>.from(
+                                                      cupo)),
                                         ),
                                       )
                                     else
                                       Row(
                                         children: [
-                                          Icon(Icons.verified_rounded, size: 16, color: AppTheme.acentoVerdeEco),
+                                          Icon(Icons.verified_rounded,
+                                              size: 16,
+                                              color: AppTheme.acentoVerdeEco),
                                           const SizedBox(width: 6),
                                           Text(
                                             'Necesidad cubierta. ¡Gracias comunidad!',
-                                            style: TextStyle(color: AppTheme.acentoVerdeEco, fontSize: 12),
+                                            style: TextStyle(
+                                                color: AppTheme.acentoVerdeEco,
+                                                fontSize: 12),
                                           ),
                                         ],
                                       ),
@@ -533,10 +638,11 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                                 ),
                               );
                             }).toList(),
-
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
-                            onPressed: _cargando ? null : () => _escanearQRValidarGeolocalizacion(inst),
+                            onPressed: _cargando
+                                ? null
+                                : () => _escanearQRValidarGeolocalizacion(inst),
                             icon: const Icon(Icons.qr_code_scanner),
                             label: const Text('ESCANEAR QR'),
                           ),

@@ -22,8 +22,11 @@ class ContenedorGrafico extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(titulo, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(subtitulo, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(titulo,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(subtitulo,
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
             const SizedBox(height: 20),
             grafico,
           ],

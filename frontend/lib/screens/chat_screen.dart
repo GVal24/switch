@@ -21,7 +21,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _mensajeController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   List<dynamic> _mensajes = [];
   bool _cargando = true;
   bool _enviando = false;
@@ -52,6 +52,15 @@ class _ChatScreenState extends State<ChatScreen> {
       _mensajes = msjs;
       _cargando = false;
     });
+
+    // Si el backend rechazó la carga (cuenta suspendida o dada de baja) lo
+    // decimos en vez de mostrar un chat vacío sin explicación.
+    final error = ApiService.ultimoErrorChat;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.redAccent),
+      );
+    }
 
     _desplazarAlFinal();
   }
@@ -105,13 +114,15 @@ class _ChatScreenState extends State<ChatScreen> {
       // 3. Volvemos a sincronizar con la BD para confirmar el mensaje
       _cargarMensajes();
     } else {
-      // Si falló la red, quitamos el mensaje de la UI y notificamos
+      // Si falló, quitamos el mensaje de la UI y mostramos el motivo real
+      // (por ejemplo: la cuenta está suspendida hasta tal fecha).
       setState(() {
         _mensajes.remove(msjTemporal);
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo enviar el mensaje. Intentalo de nuevo.'),
+        SnackBar(
+          content: Text(ApiService.ultimoErrorChat ??
+              'No se pudo enviar el mensaje. Intentalo de nuevo.'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -154,7 +165,8 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: _cargando
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppTheme.acentoVerdeEco),
+                      child: CircularProgressIndicator(
+                          color: AppTheme.acentoVerdeEco),
                     )
                   : _mensajes.isEmpty
                       ? Center(
@@ -166,41 +178,54 @@ class _ChatScreenState extends State<ChatScreen> {
                         )
                       : ListView.builder(
                           controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
                           itemCount: _mensajes.length,
                           itemBuilder: (ctx, idx) {
                             final msg = _mensajes[idx];
-                            final emisorId = (msg['emisor_id'] ?? msg['emisorId'] ?? '').toString();
+                            final emisorId =
+                                (msg['emisor_id'] ?? msg['emisorId'] ?? '')
+                                    .toString();
                             final esMio = emisorId == widget.usuarioActualId;
                             final texto = msg['texto'] ?? msg['mensaje'] ?? '';
                             final hora = msg['creado_en'] ?? msg['hora'] ?? '';
 
                             return Align(
-                              alignment: esMio ? Alignment.centerRight : Alignment.centerLeft,
+                              alignment: esMio
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
                               child: Container(
                                 margin: const EdgeInsets.symmetric(vertical: 4),
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 10),
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.75,
                                 ),
                                 decoration: BoxDecoration(
                                   color: esMio
-                                      ? AppTheme.acentoVerdeEco.withValues(alpha: 0.85)
+                                      ? AppTheme.acentoVerdeEco
+                                          .withValues(alpha: 0.85)
                                       : context.colorTarjeta,
                                   borderRadius: BorderRadius.only(
                                     topLeft: const Radius.circular(14),
                                     topRight: const Radius.circular(14),
                                     bottomLeft: Radius.circular(esMio ? 14 : 0),
-                                    bottomRight: Radius.circular(esMio ? 0 : 14),
+                                    bottomRight:
+                                        Radius.circular(esMio ? 0 : 14),
                                   ),
                                 ),
                                 child: Column(
-                                  crossAxisAlignment: esMio ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                                  crossAxisAlignment: esMio
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       texto,
                                       style: TextStyle(
-                                        color: esMio ? Colors.black : context.colorTexto,
+                                        color: esMio
+                                            ? Colors.black
+                                            : context.colorTexto,
                                         fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -210,7 +235,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                       Text(
                                         hora,
                                         style: TextStyle(
-                                          color: esMio ? Colors.black54 : context.colorTextoSuave,
+                                          color: esMio
+                                              ? Colors.black54
+                                              : context.colorTextoSuave,
                                           fontSize: 10,
                                         ),
                                       ),
@@ -254,7 +281,8 @@ class _ChatScreenState extends State<ChatScreen> {
                               color: AppTheme.acentoVerdeEco,
                             ),
                           )
-                        : const Icon(Icons.send_rounded, color: AppTheme.acentoVerdeEco),
+                        : const Icon(Icons.send_rounded,
+                            color: AppTheme.acentoVerdeEco),
                     onPressed: _enviarMensaje,
                   ),
                 ],

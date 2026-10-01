@@ -59,11 +59,12 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      final usuarioData = resultado['usuario'] ?? {
-        'id': 'usr_${_dniController.text.trim()}',
-        'nombre': 'Usuario Switch',
-        'dni': _dniController.text.trim(),
-      };
+      final usuarioData = resultado['usuario'] ??
+          {
+            'id': 'usr_${_dniController.text.trim()}',
+            'nombre': 'Usuario Switch',
+            'dni': _dniController.text.trim(),
+          };
 
       if (widget.onSesionIniciada != null) {
         widget.onSesionIniciada!(usuarioData);
@@ -88,7 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             LogoSwitchIsotipo(size: 34),
             SizedBox(width: 12),
-            Text('Mi Perfil', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            Text('Mi Perfil',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
           ],
         ),
         actions: [
@@ -113,7 +115,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 32),
-                
                 TextFormField(
                   controller: _dniController,
                   keyboardType: TextInputType.number,
@@ -134,7 +135,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _ocultarPassword,
@@ -144,7 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _ocultarPassword ? Icons.visibility_off : Icons.visibility,
+                        _ocultarPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
                       onPressed: () {
                         setState(() => _ocultarPassword = !_ocultarPassword);
@@ -160,14 +162,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 28),
-
                 ElevatedButton(
                   onPressed: _cargando ? null : _hacerLogin,
                   child: _cargando
                       ? const SizedBox(
                           height: 24,
                           width: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2.5),
                         )
                       : const Text('INGRESAR'),
                 ),
@@ -175,14 +177,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('¿No tenés una cuenta? ', style: theme.textTheme.bodyMedium),
+                    Text('¿No tenés una cuenta? ',
+                        style: theme.textTheme.bodyMedium),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => RegistroScreen(
-                              onToggleAccesibilidad: widget.onToggleAccesibilidad,
+                              onToggleAccesibilidad:
+                                  widget.onToggleAccesibilidad,
                               modoAccesibleActivo: widget.modoAccesibleActivo,
                               onAdminPressed: widget.onAdminPressed,
                             ),
@@ -199,12 +203,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
                 if (widget.onAdminPressed != null)
                   TextButton.icon(
                     onPressed: widget.onAdminPressed,
-                    icon: const Icon(Icons.admin_panel_settings, color: Colors.grey),
+                    icon: const Icon(Icons.admin_panel_settings,
+                        color: Colors.grey),
                     label: const Text(
                       'Acceso Administrador',
                       style: TextStyle(color: Colors.grey),

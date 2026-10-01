@@ -50,6 +50,39 @@ class _AppNavigationState extends State<AppNavigation> {
     }
   }
 
+  /// true si la cuenta está suspendida: entra, pero en modo lectura.
+  bool get _sesionSuspendida =>
+      widget.usuarioActual?['suspensionVigente'] == true ||
+      widget.usuarioActual?['habilitado'] == false;
+
+  void _mostrarDetalleSuspension() {
+    final hasta = widget.usuarioActual?['suspendidoHasta'];
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cuenta suspendida'),
+        content: Text(
+          hasta != null
+              ? 'La suspensión vence el $hasta.\n\n'
+                  'Durante la penalización podés entrar y recorrer la plataforma: ver el '
+                  'catálogo, las instituciones, tu perfil, tus publicaciones, tus '
+                  'propuestas y leer tus conversaciones.\n\n'
+                  'No podés publicar, subir imágenes, proponer, aceptar ni rechazar '
+                  'trueques, escribir por chat, escanear el QR de una institución '
+                  'ni denunciar a otro usuario.'
+              : 'Tu cuenta está suspendida por una penalización.\n\n'
+                  'Podés ver la plataforma, pero no realizar ninguna operación.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Entendido'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _cerrarSesionAdmin() {
     setState(() {
       _adminAutenticado = false;
@@ -73,104 +106,115 @@ class _AppNavigationState extends State<AppNavigation> {
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setStateDialog) {
-          final bool esPaletaClara = Theme.of(ctx).brightness == Brightness.light;
-          final Color colorFondo = esPaletaClara ? const Color(0xFFF6F3EE) : const Color(0xFF1a1a2e);
-          final Color colorTexto = esPaletaClara ? const Color(0xFF4A4A45) : Colors.white;
-          final Color colorSubtitulo = esPaletaClara ? const Color(0xFF8A877E) : const Color(0xFF888888);
+          final bool esPaletaClara =
+              Theme.of(ctx).brightness == Brightness.light;
+          final Color colorFondo =
+              esPaletaClara ? const Color(0xFFF6F3EE) : const Color(0xFF1a1a2e);
+          final Color colorTexto =
+              esPaletaClara ? const Color(0xFF4A4A45) : Colors.white;
+          final Color colorSubtitulo =
+              esPaletaClara ? const Color(0xFF8A877E) : const Color(0xFF888888);
           return AlertDialog(
-          scrollable: true,
-          backgroundColor: colorFondo,
-          title: Text('Acceso Admin',
-              style: TextStyle(color: colorTexto, fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Ingresá con tu cuenta de administración (DNI y contraseña).',
-                style: TextStyle(color: colorSubtitulo, fontSize: 13),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: usuarioController,
-                keyboardType: TextInputType.number,
-                style: TextStyle(color: colorTexto),
-                cursorColor: colorTexto,
-                decoration: InputDecoration(
-                  filled: false,
-                  labelText: 'DNI',
-                  labelStyle: TextStyle(color: colorSubtitulo),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: colorSubtitulo)),
-                  focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: colorTexto)),
+            scrollable: true,
+            backgroundColor: colorFondo,
+            title: Text('Acceso Admin',
+                style:
+                    TextStyle(color: colorTexto, fontWeight: FontWeight.bold)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Ingresá con tu cuenta de administración (DNI y contraseña).',
+                  style: TextStyle(color: colorSubtitulo, fontSize: 13),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: contraController,
-                obscureText: true,
-                style: TextStyle(color: colorTexto),
-                cursorColor: colorTexto,
-                decoration: InputDecoration(
-                  filled: false,
-                  labelText: 'Contraseña',
-                  labelStyle: TextStyle(color: colorSubtitulo),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: colorSubtitulo)),
-                  focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: colorTexto)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: usuarioController,
+                  keyboardType: TextInputType.number,
+                  style: TextStyle(color: colorTexto),
+                  cursorColor: colorTexto,
+                  decoration: InputDecoration(
+                    filled: false,
+                    labelText: 'DNI',
+                    labelStyle: TextStyle(color: colorSubtitulo),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: colorSubtitulo)),
+                    focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: colorTexto)),
+                  ),
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: contraController,
+                  obscureText: true,
+                  style: TextStyle(color: colorTexto),
+                  cursorColor: colorTexto,
+                  decoration: InputDecoration(
+                    filled: false,
+                    labelText: 'Contraseña',
+                    labelStyle: TextStyle(color: colorSubtitulo),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: colorSubtitulo)),
+                    focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: colorTexto)),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child:
+                    Text('CANCELAR', style: TextStyle(color: colorSubtitulo)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4CAF50)),
+                onPressed: ingresando
+                    ? null
+                    : () async {
+                        setStateDialog(() => ingresando = true);
+                        final res = await ApiService.iniciarSesionAdmin(
+                          dni: usuarioController.text.trim(),
+                          password: contraController.text,
+                        );
+                        if (!ctx.mounted) return;
+                        if (res['exito'] == true &&
+                            res['usuario']?['rol'] == 'ADMIN') {
+                          Navigator.pop(ctx);
+                          setState(() {
+                            _adminAutenticado = true;
+                            _indiceActual = 4;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('¡Acceso Admin Concedido!'),
+                                backgroundColor: Colors.green),
+                          );
+                        } else if (res['exito'] == true) {
+                          setStateDialog(() => ingresando = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Esta cuenta no tiene permisos de administración.'),
+                                backgroundColor: Colors.red),
+                          );
+                        } else {
+                          setStateDialog(() => ingresando = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(res['mensaje'] ??
+                                    'Credenciales incorrectas'),
+                                backgroundColor: Colors.red),
+                          );
+                        }
+                      },
+                child: Text(ingresando ? 'INGRESANDO...' : 'INGRESAR',
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('CANCELAR', style: TextStyle(color: colorSubtitulo)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4CAF50)),
-              onPressed: ingresando
-                  ? null
-                  : () async {
-                      setStateDialog(() => ingresando = true);
-                      final res = await ApiService.iniciarSesionAdmin(
-                        dni: usuarioController.text.trim(),
-                        password: contraController.text,
-                      );
-                      if (!ctx.mounted) return;
-                      if (res['exito'] == true && res['usuario']?['rol'] == 'ADMIN') {
-                        Navigator.pop(ctx);
-                        setState(() {
-                          _adminAutenticado = true;
-                          _indiceActual = 4;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('¡Acceso Admin Concedido!'),
-                              backgroundColor: Colors.green),
-                        );
-                      } else if (res['exito'] == true) {
-                        setStateDialog(() => ingresando = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Esta cuenta no tiene permisos de administración.'),
-                            backgroundColor: Colors.red),
-                        );
-                      } else {
-                        setStateDialog(() => ingresando = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(res['mensaje'] ?? 'Credenciales incorrectas'),
-                              backgroundColor: Colors.red),
-                        );
-                      }
-                    },
-              child: Text(ingresando ? 'INGRESANDO...' : 'INGRESAR',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
+          );
         },
       ),
     );
@@ -192,9 +236,12 @@ class _AppNavigationState extends State<AppNavigation> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final String usuarioActualId = (widget.usuarioActual?['id'] ?? '1').toString();
+    final String usuarioActualId =
+        (widget.usuarioActual?['id'] ?? '1').toString();
     final String usuarioActualNombre =
-        (widget.usuarioActual?['nombreCompleto'] ?? widget.usuarioActual?['nombre'] ?? 'Usuario Activo')
+        (widget.usuarioActual?['nombreCompleto'] ??
+                widget.usuarioActual?['nombre'] ??
+                'Usuario Activo')
             .toString();
 
     final List<Widget> pantallas = [
@@ -223,7 +270,42 @@ class _AppNavigationState extends State<AppNavigation> {
     ];
 
     return Scaffold(
-      body: pantallas[_indiceActual],
+      // Aviso de penalización: la cuenta suspendida entra en modo lectura.
+      // Sin este banner el usuario tocaría botones que el backend va a
+      // rechazar sin explicación.
+      body: Column(
+        children: [
+          if (_sesionSuspendida)
+            Material(
+              color: Colors.amber.shade100,
+              child: InkWell(
+                onTap: () => _mostrarDetalleSuspension(),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline,
+                          color: Colors.deepOrange, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Cuenta suspendida: podés ver la plataforma, pero no publicar, '
+                          'proponer trueques ni escribir por chat.',
+                          style: TextStyle(
+                            fontSize: widget.modoAccesibleActivo ? 15 : 12,
+                            color: Colors.deepOrange.shade900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          Expanded(child: pantallas[_indiceActual]),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceActual,
         type: BottomNavigationBarType.fixed,

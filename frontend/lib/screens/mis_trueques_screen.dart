@@ -55,7 +55,9 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(estado == 'ACEPTADA' ? '¿Aceptar trueque?' : '¿Rechazar propuesta?'),
+        title: Text(estado == 'ACEPTADA'
+            ? '¿Aceptar trueque?'
+            : '¿Rechazar propuesta?'),
         content: Text(
           estado == 'ACEPTADA'
               ? 'Se aceptará la propuesta de ${propuesta['ofertante_nombre']} por "${propuesta['titulo_deseado']}". Las demás propuestas pendientes sobre esta publicación se rechazarán automáticamente.'
@@ -68,8 +70,9 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  estado == 'ACEPTADA' ? AppTheme.acentoVerdeEco : Colors.redAccent,
+              backgroundColor: estado == 'ACEPTADA'
+                  ? AppTheme.acentoVerdeEco
+                  : Colors.redAccent,
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(estado == 'ACEPTADA' ? 'Aceptar' : 'Rechazar'),
@@ -86,7 +89,9 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(resultado['mensaje'] ?? ''),
-        backgroundColor: resultado['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
+        backgroundColor: resultado['exito'] == true
+            ? AppTheme.acentoVerdeEco
+            : Colors.redAccent,
       ),
     );
     _cargarPropuestas();
@@ -116,7 +121,9 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
                 children: List.generate(5, (index) {
                   return IconButton(
                     icon: Icon(
-                      index < puntajeSeleccionado ? Icons.star : Icons.star_border,
+                      index < puntajeSeleccionado
+                          ? Icons.star
+                          : Icons.star_border,
                       color: Colors.amber,
                       size: 32,
                     ),
@@ -163,7 +170,9 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(resultado['mensaje'] ?? ''),
-        backgroundColor: resultado['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
+        backgroundColor: resultado['exito'] == true
+            ? AppTheme.acentoVerdeEco
+            : Colors.redAccent,
       ),
     );
     _cargarPropuestas();
@@ -225,11 +234,13 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
                     p['titulo_deseado']?.toString().isNotEmpty == true
                         ? p['titulo_deseado']
                         : 'Publicación',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: _colorEstado(p['estado']).withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
@@ -295,7 +306,9 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
                   ),
                 ],
               )
-            else if ((p['estado'] == 'ACEPTADA' || p['estado'] == 'COMPLETADO') && !yaConfirme)
+            else if ((p['estado'] == 'ACEPTADA' ||
+                    p['estado'] == 'COMPLETADO') &&
+                !yaConfirme)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -311,7 +324,8 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
             else if (yaConfirme && p['estado'] != 'COMPLETADO')
               Row(
                 children: [
-                  Icon(Icons.hourglass_top, size: 16, color: Colors.grey.shade600),
+                  Icon(Icons.hourglass_top,
+                      size: 16, color: Colors.grey.shade600),
                   const SizedBox(width: 6),
                   Text(
                     'Esperando confirmación de la otra parte',
@@ -322,7 +336,8 @@ class _MisTruequesScreenState extends State<MisTruequesScreen>
             else if (p['estado'] == 'COMPLETADO' && yaConfirme)
               Row(
                 children: [
-                  Icon(Icons.verified, size: 16, color: AppTheme.acentoVerdeEco),
+                  Icon(Icons.verified,
+                      size: 16, color: AppTheme.acentoVerdeEco),
                   const SizedBox(width: 6),
                   Text(
                     'Trueque completado. ¡Gracias por confiar!',

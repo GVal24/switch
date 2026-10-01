@@ -9,6 +9,8 @@ import 'instituciones_service.dart';
 import 'chat_service.dart';
 import 'admin_service.dart';
 import 'geolocalizacion_service.dart';
+import 'legal_service.dart';
+import 'otp_service.dart';
 
 class ApiService {
   // Configuración de red local
@@ -47,7 +49,9 @@ class ApiService {
     required String telefono,
     required String password,
     required bool aceptoTerminos,
+    required bool aceptoPrivacidad,
     required bool esMayorEdad,
+    required String tokenVerificacion,
   }) =>
       AuthService.registrarUsuario(
         dni: dni,
@@ -56,14 +60,45 @@ class ApiService {
         telefono: telefono,
         password: password,
         aceptoTerminos: aceptoTerminos,
+        aceptoPrivacidad: aceptoPrivacidad,
         esMayorEdad: esMayorEdad,
+        tokenVerificacion: tokenVerificacion,
       );
+
+  // ==========================================
+  // 1.b DOCUMENTOS LEGALES (públicos, sin sesión)
+  // ==========================================
+  static Future<List<dynamic>> listarDocumentosLegales() =>
+      LegalService.listarDocumentos();
+
+  static Future<Map<String, dynamic>?> obtenerDocumentoLegal(String id) =>
+      LegalService.obtenerDocumento(id);
+
+  static String documentoLegalATexto(Map<String, dynamic> documento) =>
+      LegalService.aTextoPlano(documento);
+
+  // ==========================================
+  // 1.c VERIFICACIÓN DE TELÉFONO POR OTP (públicas)
+  // ==========================================
+  static Future<Map<String, dynamic>> enviarCodigoOtp({
+    required String telefono,
+    String? canalPreferido,
+  }) =>
+      OtpService.pedirCodigo(
+        telefono: telefono,
+        canalPreferido: canalPreferido,
+      );
+
+  static Future<Map<String, dynamic>> verificarCodigoOtp({
+    required String telefono,
+    required String codigo,
+  }) =>
+      OtpService.verificarCodigo(telefono: telefono, codigo: codigo);
 
   static Future<Map<String, dynamic>?> obtenerSesionGuardada() =>
       AuthService.obtenerSesionLocal();
 
-  static Future<void> cerrarSesion() =>
-      AuthService.cerrarSesion();
+  static Future<void> cerrarSesion() => AuthService.cerrarSesion();
 
   // ==========================================
   // 2. CATÁLOGO & INTERCAMBIOS (CatalogoService)
@@ -138,7 +173,8 @@ class ApiService {
   static Future<Map<String, dynamic>?> obtenerMisPropuestas() =>
       CatalogoService.obtenerMisPropuestas();
 
-  static Future<Map<String, dynamic>> responderPropuesta(String intercambioId, String estado) =>
+  static Future<Map<String, dynamic>> responderPropuesta(
+          String intercambioId, String estado) =>
       CatalogoService.responderPropuesta(intercambioId, estado);
 
   static Future<Map<String, dynamic>> confirmarTrueque(
@@ -179,7 +215,8 @@ class ApiService {
   static Future<List<dynamic>> obtenerInstituciones() =>
       InstitucionesService.obtenerInstituciones();
 
-  static Future<List<dynamic>> obtenerCuposPorInstitucion(String institucionId) =>
+  static Future<List<dynamic>> obtenerCuposPorInstitucion(
+          String institucionId) =>
       InstitucionesService.obtenerCuposPorInstitucion(institucionId);
 
   static Future<Map<String, dynamic>> registrarInstitucion({
@@ -217,8 +254,13 @@ class ApiService {
   // ==========================================
   // 4. CHAT / MENSAJERÍA (ChatService)
   // ==========================================
-  static Future<List<dynamic>> obtenerMensajes(String emisorId, String receptorId) =>
+  static Future<List<dynamic>> obtenerMensajes(
+          String emisorId, String receptorId) =>
       ChatService.obtenerMensajes(emisorId, receptorId);
+
+  /// Motivo del último fallo de una operación de chat (por ejemplo, una cuenta
+  /// suspendida). Permite mostrárselo al usuario tal cual lo informa el backend.
+  static String? get ultimoErrorChat => ChatService.ultimoError;
 
   static Future<bool> enviarMensaje({
     required String emisorId,
@@ -263,7 +305,8 @@ class ApiService {
   static Future<List<dynamic>> obtenerSugerenciasEsfuerzo() =>
       AdminService.obtenerSugerenciasEsfuerzo();
 
-  static Future<Map<String, dynamic>> aplicarSugerenciaEsfuerzo(String sugerenciaId) =>
+  static Future<Map<String, dynamic>> aplicarSugerenciaEsfuerzo(
+          String sugerenciaId) =>
       AdminService.aplicarSugerenciaEsfuerzo(sugerenciaId);
 
   static Future<bool> descartarSugerenciaEsfuerzo(String sugerenciaId) =>

@@ -19,7 +19,8 @@ class RegistroInstitucionScreen extends StatefulWidget {
   const RegistroInstitucionScreen({Key? key}) : super(key: key);
 
   @override
-  State<RegistroInstitucionScreen> createState() => _RegistroInstitucionScreenState();
+  State<RegistroInstitucionScreen> createState() =>
+      _RegistroInstitucionScreenState();
 }
 
 class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
@@ -53,7 +54,8 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
     super.dispose();
   }
 
-  Widget _chipPrioridad(BuildContext context, _NecesidadForm n, String valor, String etiqueta, Color color) {
+  Widget _chipPrioridad(BuildContext context, _NecesidadForm n, String valor,
+      String etiqueta, Color color) {
     final seleccionada = n.prioridad == valor;
     return ChoiceChip(
       label: Text(etiqueta),
@@ -106,7 +108,8 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(res['mensaje'] ?? ''),
-        backgroundColor: res['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
+        backgroundColor:
+            res['exito'] == true ? AppTheme.acentoVerdeEco : Colors.redAccent,
       ),
     );
     if (res['exito'] == true) Navigator.pop(context, true);
@@ -128,10 +131,12 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.add_business_rounded, size: 36, color: AppTheme.acentoVerdeEco),
+                    const Icon(Icons.add_business_rounded,
+                        size: 36, color: AppTheme.acentoVerdeEco),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text('Sumá tu institución a Switch', style: theme.textTheme.headlineLarge),
+                      child: Text('Sumá tu institución a Switch',
+                          style: theme.textTheme.headlineLarge),
                     ),
                   ],
                 ),
@@ -141,36 +146,44 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 24),
-
-                Text('Datos de la institución', style: theme.textTheme.titleMedium),
+                Text('Datos de la institución',
+                    style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _nombreController,
                   textCapitalization: TextCapitalization.words,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Ingresá el nombre de la institución.' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Ingresá el nombre de la institución.'
+                      : null,
                   decoration: const InputDecoration(labelText: 'Nombre *'),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _tipoSeleccionado,
-                  decoration: const InputDecoration(labelText: 'Tipo de institución'),
+                  decoration:
+                      const InputDecoration(labelText: 'Tipo de institución'),
                   items: _tipos
-                      .map((t) => DropdownMenuItem(value: t['valor'], child: Text(t['etiqueta']!)))
+                      .map((t) => DropdownMenuItem(
+                          value: t['valor'], child: Text(t['etiqueta']!)))
                       .toList(),
-                  onChanged: (v) => setState(() => _tipoSeleccionado = v ?? 'COMEDOR'),
+                  onChanged: (v) =>
+                      setState(() => _tipoSeleccionado = v ?? 'COMEDOR'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _direccionController,
                   textCapitalization: TextCapitalization.words,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Ingresá la dirección.' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Ingresá la dirección.'
+                      : null,
                   decoration: const InputDecoration(labelText: 'Dirección *'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _telefonoController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'Teléfono de contacto'),
+                  decoration:
+                      const InputDecoration(labelText: 'Teléfono de contacto'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -179,34 +192,38 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
                   textCapitalization: TextCapitalization.sentences,
                   decoration: const InputDecoration(
                     labelText: 'Contanos brevemente qué hacen',
-                    hintText: 'Ej: Comedor comunitario que asiste a 40 familias del barrio...',
+                    hintText:
+                        'Ej: Comedor comunitario que asiste a 40 familias del barrio...',
                   ),
                 ),
                 const SizedBox(height: 28),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Necesidades de voluntariado', style: theme.textTheme.titleMedium),
+                    Text('Necesidades de voluntariado',
+                        style: theme.textTheme.titleMedium),
                     IconButton(
-                      onPressed: () => setState(() => _necesidades.add(_NecesidadForm())),
-                      icon: const Icon(Icons.add_circle_rounded, color: AppTheme.acentoVerdeEco),
+                      onPressed: () =>
+                          setState(() => _necesidades.add(_NecesidadForm())),
+                      icon: const Icon(Icons.add_circle_rounded,
+                          color: AppTheme.acentoVerdeEco),
                       tooltip: 'Agregar otra necesidad',
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('¿En qué necesitan ayuda los vecinos y cuántos voluntarios hacen falta?',
+                Text(
+                    '¿En qué necesitan ayuda los vecinos y cuántos voluntarios hacen falta?',
                     style: theme.textTheme.bodyMedium),
                 const SizedBox(height: 12),
-
                 ..._necesidades.asMap().entries.map((entry) {
                   final index = entry.key;
                   final n = entry.value;
                   return Card(
                     color: theme.colorScheme.surface,
                     margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                     child: Padding(
                       padding: const EdgeInsets.all(14),
                       child: Column(
@@ -214,14 +231,19 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
                           Row(
                             children: [
                               Expanded(
-                                child: Text('Necesidad ${index + 1}', style: theme.textTheme.titleMedium?.copyWith(fontSize: 15)),
+                                child: Text('Necesidad ${index + 1}',
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(fontSize: 15)),
                               ),
                               if (_necesidades.length > 1)
                                 IconButton(
                                   onPressed: () => setState(() {
                                     _necesidades.removeAt(index).dispose();
                                   }),
-                                  icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 22),
+                                  icon: const Icon(
+                                      Icons.remove_circle_outline_rounded,
+                                      color: Colors.redAccent,
+                                      size: 22),
                                 ),
                             ],
                           ),
@@ -245,21 +267,25 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              Text('Voluntarios necesarios:', style: theme.textTheme.bodyLarge),
+                              Text('Voluntarios necesarios:',
+                                  style: theme.textTheme.bodyLarge),
                               const Spacer(),
                               IconButton(
                                 onPressed: () => setState(() {
                                   if (n.cupoMaximo > 1) n.cupoMaximo--;
                                 }),
-                                icon: const Icon(Icons.remove_circle_outline_rounded),
+                                icon: const Icon(
+                                    Icons.remove_circle_outline_rounded),
                               ),
                               Text('${n.cupoMaximo}',
-                                  style: theme.textTheme.titleMedium?.copyWith(fontSize: 17)),
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(fontSize: 17)),
                               IconButton(
                                 onPressed: () => setState(() {
                                   if (n.cupoMaximo < 99) n.cupoMaximo++;
                                 }),
-                                icon: const Icon(Icons.add_circle_outline_rounded),
+                                icon: const Icon(
+                                    Icons.add_circle_outline_rounded),
                               ),
                             ],
                           ),
@@ -273,9 +299,12 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
                           Wrap(
                             spacing: 8,
                             children: [
-                              _chipPrioridad(context, n, 'GENERAL', 'General', Colors.grey),
-                              _chipPrioridad(context, n, 'PRIORITARIA', 'Prioritaria', Colors.orange),
-                              _chipPrioridad(context, n, 'URGENTE', 'Urgente', Colors.redAccent),
+                              _chipPrioridad(context, n, 'GENERAL', 'General',
+                                  Colors.grey),
+                              _chipPrioridad(context, n, 'PRIORITARIA',
+                                  'Prioritaria', Colors.orange),
+                              _chipPrioridad(context, n, 'URGENTE', 'Urgente',
+                                  Colors.redAccent),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -288,16 +317,21 @@ class _RegistroInstitucionScreenState extends State<RegistroInstitucionScreen> {
                     ),
                   );
                 }),
-
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: _enviando ? null : _enviarRegistro,
                     icon: _enviando
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
                         : const Icon(Icons.publish_rounded),
-                    label: Text(_enviando ? 'PUBLICANDO...' : 'PUBLICAR EN VOLUNTARIADO'),
+                    label: Text(_enviando
+                        ? 'PUBLICANDO...'
+                        : 'PUBLICAR EN VOLUNTARIADO'),
                   ),
                 ),
                 const SizedBox(height: 24),

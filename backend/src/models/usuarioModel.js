@@ -78,15 +78,101 @@ class UsuarioModel {
     if (!dias || Number(dias) <= 0) {
       return this.levantarSuspension(usuarioId);
     }
+    // No se toca 'activo': una baja lógica permanente no puede revertirse
+    // suspendiendo al usuario (eso lo rehabilitaba indebidamente).
     const query = `
       UPDATE usuarios
-      SET suspendido_hasta = CURRENT_TIMESTAMP + ($2 || ' days')::interval,
-          activo = TRUE
-      WHERE id = $1
+      SET suspendido_hasta = CURRENT_TIMESTAMP + ($2 || ' days')::interval
+      WHERE id = $1 AND activo = TRUE
       RETURNING id, dni, nombre, apellido, TO_CHAR(suspendido_hasta AT TIME ZONE 'America/Argentina/Buenos_Aires', 'DD/MM/YYYY') AS suspendido_hasta;
     `;
     const result = await db.query(query, [usuarioId, String(Number(dias))]);
-    return result.rows[0] || null;
+    if (result.rows[0]) return result.rows[0];
+
+    // No se actualizó: o el usuario no existe, o está dado de baja.
+    const { NotFoundError, ValidationError } = require('../utils/customErrors');
+    const existe = await db.query('SELECT activo FROM usuarios WHERE id = $1', [usuarioId]);
+    if (!existe.rows[0]) {
+      throw new NotFoundError('El usuario indicado no existe.');
+    }
+    throw new ValidationError('No se puede suspender a un usuario que está dado de baja.');
+  }
+
+  /**
+   * Estado de habilitación de un usuario en el momento actual.
+   * Es la única fuente de verdad para decidir si puede operar en la plataforma:
+   *  - deshabilitado: baja lógica permanente (activo = FALSE)
+   *  - suspendido: baja temporal con vencimiento (suspendido_hasta > ahora)
+   *  - habilitado: puede operar
+   */
+  static async obtenerEstadoHabilitacion(usuarioId) {
+    const result = await db.query(
+      `SELECT 
+         id,
+         nombre,
+         apellido,
+         rol,
+         activo,
+         suspendido_hasta,
+         (activo = FALSE) AS deshabilitado,
+         (activo = TRUE AND suspendido_hasta > CURRENT_TIMESTAMP) AS suspendido,
+         TO_CHAR(suspendido_hasta AT TIME ZONE 'America/Argentina/Buenos_Aires', 'DD/MM/YYYY HH24:MI') AS suspendido_hasta_legible
+       FROM usuarios
+       WHERE id = $1`,
+      [usuarioId]
+    );
+
+    const fila = result.rows[0];
+    if (!fila) return null;
+
+    return {
+      ...fila,
+      habilitado: !fila.deshabilitado && !fila.suspendido
+    };
+  }
+
+  /**
+   * Una baja lógica permanente cierra el acceso: el usuario no puede ni
+   * entrar. Distinto de una suspensión, que es una penalización temporal y
+   * sí permite entrar en modo lectura.
+   */
+  static async exigirCuentaNoDadaDeBaja(usuarioId) {
+    const estado = await this.obtenerEstadoHabilitacion(usuarioId);
+    if (!estado) {
+      const { NotFoundError } = require('../utils/customErrors');
+      throw new NotFoundError('El usuario de esta sesión no existe.');
+    }
+    if (estado.deshabilitado) {
+      const { ForbiddenError } = require('../utils/customErrors');
+      throw new ForbiddenError('Tu cuenta fue dada de baja por la administración.');
+    }
+    return estado;
+  }
+
+  /**
+   * Verifica que un usuario esté habilitado para operar.
+   * Lanza ForbiddenError con un mensaje claro si está suspendido o dado de baja.
+   * @param {number} usuarioId
+   * @param {string} [motivo] qué intentó hacer, para armar el mensaje.
+   */
+  static async exigirHabilitacion(usuarioId, motivo = 'operar en la plataforma') {
+    const estado = await this.obtenerEstadoHabilitacion(usuarioId);
+    if (!estado) {
+      const { NotFoundError } = require('../utils/customErrors');
+      throw new NotFoundError('El usuario no existe.');
+    }
+    if (estado.deshabilitado) {
+      const { ForbiddenError } = require('../utils/customErrors');
+      throw new ForbiddenError('Tu cuenta fue dada de baja por la administración. No podés ' + motivo + '.');
+    }
+    if (estado.suspendido) {
+      const { ForbiddenError } = require('../utils/customErrors');
+      throw new ForbiddenError(
+        `Tu cuenta está suspendida hasta el ${estado.suspendido_hasta_legible}. ` +
+        'Durante la suspensión no podés ' + motivo + '.'
+      );
+    }
+    return estado;
   }
 
   /**

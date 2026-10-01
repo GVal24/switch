@@ -75,20 +75,20 @@ class _FakeHttpClient implements HttpClient {
   }
 
   @override
-  Future<HttpClientRequest> get(
-      String host, int port, String path) async => _FakeRequestWithHost(host, port, path);
+  Future<HttpClientRequest> get(String host, int port, String path) async =>
+      _FakeRequestWithHost(host, port, path);
 
   @override
-  Future<HttpClientRequest> post(
-      String host, int port, String path) async => _FakeRequestWithHost(host, port, path);
+  Future<HttpClientRequest> post(String host, int port, String path) async =>
+      _FakeRequestWithHost(host, port, path);
 
   @override
-  Future<HttpClientRequest> put(
-      String host, int port, String path) async => _FakeRequestWithHost(host, port, path);
+  Future<HttpClientRequest> put(String host, int port, String path) async =>
+      _FakeRequestWithHost(host, port, path);
 
   @override
-  Future<HttpClientRequest> delete(
-      String host, int port, String path) async => _FakeRequestWithHost(host, port, path);
+  Future<HttpClientRequest> delete(String host, int port, String path) async =>
+      _FakeRequestWithHost(host, port, path);
 
   @override
   void close({bool force = false}) {}
@@ -135,7 +135,7 @@ class _FakeRequest implements HttpClientRequest {
   @override
   Uri get uri => url;
 
-@override
+  @override
   void add(List<int> data) => _body.addAll(data);
 
   @override
@@ -209,7 +209,8 @@ class _FakeRequest implements HttpClientRequest {
 
   @override
   dynamic noSuchMethod(Invocation invocation) {
-    throw UnimplementedError('Método no soportado en FakeRequest: ${invocation.memberName}');
+    throw UnimplementedError(
+        'Método no soportado en FakeRequest: ${invocation.memberName}');
   }
 }
 
@@ -341,8 +342,9 @@ class _FakeHeaders implements HttpHeaders {
 
   @override
   void remove(String name, Object value) {
-    _entries.removeWhere(
-        (e) => e.key.toLowerCase() == name.toLowerCase() && e.value == value.toString());
+    _entries.removeWhere((e) =>
+        e.key.toLowerCase() == name.toLowerCase() &&
+        e.value == value.toString());
   }
 
   @override
@@ -352,7 +354,8 @@ class _FakeHeaders implements HttpHeaders {
 
   @override
   dynamic noSuchMethod(Invocation invocation) {
-    throw UnimplementedError('Método no soportado en FakeHeaders: ${invocation.memberName}');
+    throw UnimplementedError(
+        'Método no soportado en FakeHeaders: ${invocation.memberName}');
   }
 }
 
@@ -382,7 +385,7 @@ class _FakeResponse implements HttpClientResponse {
   HttpClientResponseCompressionState get compressionState =>
       HttpClientResponseCompressionState.notCompressed;
 
-@override
+  @override
   HttpConnectionInfo? get connectionInfo => null;
 
   @override
@@ -403,7 +406,7 @@ class _FakeResponse implements HttpClientResponse {
     );
   }
 
-@override
+  @override
   Future<String> fold<String>(String initialValue,
       String combine(String previous, Uint8List element)) async {
     return combine(initialValue, Uint8List.fromList(_data));
@@ -455,7 +458,8 @@ void main() {
       debugPrint('ERROR PANEL: $e');
     }
     expect(
-      errores.where((e) => e.contains('infinite width') || e.contains('BoxConstraints forces')),
+      errores.where((e) =>
+          e.contains('infinite width') || e.contains('BoxConstraints forces')),
       isEmpty,
       reason: 'Se reprodujo "BoxConstraints forces an infinite width":\n'
           '${errores.take(5).join('\n---\n')}',
@@ -503,10 +507,12 @@ void main() {
         await tester.pumpWidget(MaterialApp(
           theme: tema,
           builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(escala)),
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(escala)),
             child: child!,
           ),
-          home: AdminDashboardScreen(onCerrarSesion: () {}, modoAccesibleActivo: true),
+          home: AdminDashboardScreen(
+              onCerrarSesion: () {}, modoAccesibleActivo: true),
         ));
 
         await tester.pump(const Duration(seconds: 1));
@@ -519,9 +525,12 @@ void main() {
         // El panel debe llegar a pintarse con datos reales.
         expect(find.textContaining('Denuncias y Reportes'), findsOneWidget);
         expect(
-          errores.where((e) => e.contains('infinite width') || e.contains('BoxConstraints forces')),
+          errores.where((e) =>
+              e.contains('infinite width') ||
+              e.contains('BoxConstraints forces')),
           isEmpty,
-          reason: 'Se reprodujo "BoxConstraints forces an infinite width" con $nombreTema '
+          reason:
+              'Se reprodujo "BoxConstraints forces an infinite width" con $nombreTema '
               '(escala $escala):\n${errores.take(5).join('\n---\n')}',
         );
       });

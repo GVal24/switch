@@ -25,8 +25,11 @@ class KpiCard extends StatelessWidget {
           children: [
             Icon(icono, color: color, size: 28),
             const SizedBox(height: 8),
-            Text(valor, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text(titulo, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(valor,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(titulo,
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
       ),

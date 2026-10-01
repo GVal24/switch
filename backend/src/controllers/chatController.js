@@ -1,6 +1,8 @@
 const asyncWrapper = require('../middlewares/asyncWrapper');
-const { ValidationError } = require('../utils/customErrors');
+const { ValidationError, ForbiddenError } = require('../utils/customErrors');
 const ChatModel = require('../models/chatModel');
+const UsuarioModel = require('../models/usuarioModel');
+const VoluntariadoModel = require('../models/voluntariadoModel');
 
 /**
  * GET /api/mensajes?emisorId=..&receptorId=..
@@ -40,6 +42,31 @@ const enviarMensaje = asyncWrapper(async (req, res) => {
   }
   if (!texto || String(texto).trim() === '') {
     throw new ValidationError('El mensaje no puede estar vacío.');
+  }
+
+  // Leer el chat sigue permitido con la cuenta suspendida o el Nexo vencido
+  // (punto de castigo: puede ver, no tocar). Escribir exige la habilitación
+  // vigente, porque el chat sirve para coordinar los trueques del circuito.
+  const tieneNexoActivo = await VoluntariadoModel.verificarNexoSocialActivo(emisorId);
+  if (!tieneNexoActivo) {
+    throw new ForbiddenError(
+      'Tu habilitación está vencida o todavía no fue activada. ' +
+      'Podés leer tus conversaciones, pero para escribir necesitás cubrir un cupo en una institución comunitaria.'
+    );
+  }
+
+  // No se puede escribir a un usuario suspendido o dado de baja.
+  // Los receptores institutionales ("inst_X") no se validan contra usuarios.
+  if (!String(receptorId).startsWith('inst_')) {
+    try {
+      await UsuarioModel.exigirHabilitacion(
+        Number(receptorId),
+        'enviarle mensajes por chat, porque su cuenta está suspendida o dada de baja'
+      );
+    } catch (e) {
+      if (e.codigoEstado === 404) throw e;
+      throw new ForbiddenError('No podés enviarle mensajes por chat a este usuario.');
+    }
   }
 
   const nuevoMensaje = await ChatModel.crearMensaje({

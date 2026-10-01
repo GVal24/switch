@@ -4,6 +4,24 @@ const IntercambioModel = require('../models/intercambioModel');
 const ResenaModel = require('../models/resenaModel');
 const P2PModel = require('../models/p2pModel');
 const UsuarioModel = require('../models/usuarioModel');
+const VoluntariadoModel = require('../models/voluntariadoModel');
+
+/**
+ * El Nexo Social es la habilitación para intercambiar: se obtiene cubriendo un
+ * cupo de una institución comunitaria y vence pasado el plazo establecido.
+ * Mientras está vencido el usuario puede ver la plataforma, pero no proponer,
+ * aceptar ni rechazar trueques: el circuito de retribución se sostiene sobre
+ * colaborar con las instituciones.
+ */
+async function exigirNexoSocialVigente(usuarioId) {
+  const tieneNexoActivo = await VoluntariadoModel.verificarNexoSocialActivo(usuarioId);
+  if (!tieneNexoActivo) {
+    throw new ForbiddenError(
+      'Tu habilitación para intercambiar está vencida o todavía no fue activada. ' +
+      'Tenés que cubrir un cupo en una institución comunitaria para renewarla antes de proponer, aceptar o rechazar trueques.'
+    );
+  }
+}
 
 /**
  * POST /api/intercambios/proponer
@@ -32,6 +50,9 @@ const proponerIntercambio = asyncWrapper(async (req, res) => {
     throw new ValidationError('Necesitás seleccionar al menos una publicación tuya para ofrecer.');
   }
 
+  // 0. Habilitación vigente para intercambiar (Nexo Social no vencido)
+  await exigirNexoSocialVigente(ofertanteId);
+
   // 1. La publicación deseada debe existir y estar activa
   const deseadas = await P2PModel.obtenerPorIds([Number(publicacionDeseadaId)]);
   const deseada = deseadas[0];
@@ -43,6 +64,12 @@ const proponerIntercambio = asyncWrapper(async (req, res) => {
   if (Number(deseada.usuario_id) === Number(ofertanteId)) {
     throw new ValidationError('No podés proponer un trueque sobre tu propia publicación.');
   }
+
+  // 3. No se propone sobre publicaciones de usuarios suspendidos o dados de baja
+  await UsuarioModel.exigirHabilitacion(
+    Number(deseada.usuario_id),
+    'intercambiar con esta publicación, porque su dueño está suspendido o dado de baja'
+  );
 
   // 3. No vale ofrecer la misma publicación que se pide
   if (itemsIds.includes(Number(publicacionDeseadaId))) {
@@ -126,6 +153,14 @@ const responderPropuesta = asyncWrapper(async (req, res) => {
     throw new ForbiddenError('Solo quien publicó el artículo puede responder esta propuesta.');
   }
 
+  // Habilitación vigente: con el Nexo Social vencido no se acepta ni se rechaza
+  await exigirNexoSocialVigente(req.usuario.id);
+  // La contraparte también tiene que estar habilitada
+  await UsuarioModel.exigirHabilitacion(
+    Number(propuesta.ofertante_id),
+    'responder esta propuesta, porque quien la envió está suspendido o dado de baja'
+  );
+
   const resultado = await IntercambioModel.responder(id, estado);
   if (!resultado) {
     throw new ValidationError('Esta propuesta ya fue respondida.');
@@ -161,6 +196,13 @@ const confirmarTrueque = asyncWrapper(async (req, res) => {
   if (propuesta.estado === 'RECHAZADA') {
     throw new ValidationError('Esta propuesta fue rechazada.');
   }
+
+  // Habilitación vigente también para cerrar el trueque
+  await exigirNexoSocialVigente(usuarioId);
+  await UsuarioModel.exigirHabilitacion(
+    Number(propuesta.dueno_id) === Number(usuarioId) ? Number(propuesta.ofertante_id) : Number(propuesta.dueno_id),
+    'confirmar este trueque, porque la otra parte está suspendida o dada de baja'
+  );
 
   const resultado = await IntercambioModel.confirmar(id, usuarioId);
   if (resultado.noExiste) throw new NotFoundError('La propuesta no existe.');

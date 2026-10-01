@@ -13,9 +13,15 @@ const errorHandler = (err, req, res, next) => {
     message = "La referencia a la institución o recurso no es válida.";
   }
 
-  if (err.code === '22P02') { // Sintaxis inválida (ej. UUID mal formado)
+  // 22P02 = "invalid_text_representation": un texto no se pudo convertir al
+  // tipo que la columna pide. Puede ser un UUID mal formado, un número
+  // inválido o un JSON mal armado, así que el mensaje no culpa a un UUID
+  // en particular: informa que el dato recibido no tiene el formato correcto.
+  if (err.code === '22P02') {
     statusCode = 400;
-    message = "El formato del identificador (UUID) ingresado no es válido.";
+    message =
+      "Alguno de los datos enviados no tiene el formato esperado. " +
+      "Revisá los campos e intentá de nuevo.";
   }
 
   if (statusCode === 500) {
@@ -28,6 +34,9 @@ const errorHandler = (err, req, res, next) => {
     exito: false,
     codigoEstado: statusCode,
     mensaje: message,
+    // Datos auxiliares del error de negocio (por ejemplo, cuántos segundos
+    // faltan para poder volver a pedir un código OTP).
+    ...(err.detalles ? { detalles: err.detalles } : {}),
     error: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 };

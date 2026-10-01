@@ -15,7 +15,8 @@ class GraficoLineasTrueques extends StatelessWidget {
   List<FlSpot> _generarPuntos() {
     List<FlSpot> puntos = [];
     for (int i = 0; i < valores.length; i++) {
-      double valorY = (valores[i] is num) ? (valores[i] as num).toDouble() : 0.0;
+      double valorY =
+          (valores[i] is num) ? (valores[i] as num).toDouble() : 0.0;
       puntos.add(FlSpot(i.toDouble(), valorY));
     }
     return puntos.isNotEmpty ? puntos : const [FlSpot(0, 0)];
@@ -41,8 +42,10 @@ class GraficoLineasTrueques extends StatelessWidget {
           ),
           titlesData: FlTitlesData(
             show: true,
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
