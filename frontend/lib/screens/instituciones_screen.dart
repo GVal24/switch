@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/boton_accesibilidad.dart';
 import '../widgets/logo_switch.dart';
+import '../widgets/contacto_dialog.dart';
 import 'chat_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'registro_institucion_screen.dart';
@@ -278,6 +279,16 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
           ],
         ),
         actions: [
+          // Botón de contacto: la pantalla de inicio es donde todo el mundo
+          // cae, así que acá es donde tiene que estar el canal para escribirle
+          // a la administración.
+          IconButton(
+            icon: Icon(Icons.support_agent,
+                size: widget.modoAccesibleActivo ? 28 : 24),
+            tooltip: 'Escribinos',
+            onPressed: () => ContactoDialog.mostrar(context,
+                esAccesible: widget.modoAccesibleActivo),
+          ),
           BotonAccesibilidad(
             modoAccesibleActivo: widget.modoAccesibleActivo,
             onPressed: widget.onToggleAccesibilidad,

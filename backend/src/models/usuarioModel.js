@@ -180,12 +180,67 @@ class UsuarioModel {
    */
   static async levantarSuspension(usuarioId) {
     const result = await db.query(
-      `UPDATE usuarios SET suspendido_hasta = NULL 
+      `UPDATE usuarios SET suspendido_hasta = NULL, motivo_suspension = NULL
        WHERE id = $1
        RETURNING id, dni, nombre, apellido;`,
       [usuarioId]
     );
     return result.rows[0] || null;
+  }
+
+  /**
+   * Da de alta nuevamente a una cuenta dada de baja.
+   *
+   * darDeBaja() es una baja lógica permanente (activo = FALSE): la persona
+   * pierde el acceso y sus publicaciones salen del catálogo. Este método es
+   * el camino inverso y queda reservado al rol ADMIN.
+   */
+  static async reactivar(usuarioId) {
+    const result = await db.query(
+      `UPDATE usuarios
+       SET activo = TRUE,
+           suspendido_hasta = NULL,
+           motivo_suspension = NULL
+       WHERE id = $1
+       RETURNING id, dni, nombre, apellido, activo, suspendido_hasta;`,
+      [usuarioId]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Lista las cuentas bloqueadas o penalizadas, para que la administración
+   * pueda verlas y decidir.
+   *
+   * Se listan las dos situaciones distintas, y sólo una está vencida:
+   *  - deshabilitado: baja lógica permanente, no entra a la plataforma
+   *  - suspendido: penalización temporal; se marca si el plazo ya corrió
+   */
+  static async listarBloqueados() {
+    const query = `
+      SELECT
+        id, dni, nombre, apellido, rol, activo,
+        suspendido_hasta,
+        motivo_suspension,
+        (activo = FALSE) AS deshabilitado,
+        (activo = TRUE AND suspendido_hasta > CURRENT_TIMESTAMP) AS suspendido,
+        (activo = TRUE AND suspendido_hasta IS NOT NULL
+          AND suspendido_hasta <= CURRENT_TIMESTAMP) AS suspension_vencida,
+        -- Días enteros que faltan, para que la pantalla pueda decir "3 días"
+        -- sin tener que interpretar un intervalo. Si ya venció, 0.
+        CASE
+          WHEN activo = FALSE OR suspendido_hasta IS NULL THEN NULL
+          ELSE GREATEST(CEIL(EXTRACT(EPOCH FROM (suspendido_hasta - CURRENT_TIMESTAMP)) / 86400.0)::int, 0)
+        END AS dias_restantes,
+        TO_CHAR(suspendido_hasta AT TIME ZONE 'America/Argentina/Buenos_Aires', 'DD/MM/YYYY HH24:MI') AS suspendido_hasta_legible,
+        TO_CHAR(creado_en AT TIME ZONE 'America/Argentina/Buenos_Aires', 'DD/MM/YYYY') AS creado_legible
+      FROM usuarios
+      WHERE activo = FALSE
+         OR (activo = TRUE AND suspendido_hasta IS NOT NULL)
+      ORDER BY (activo = FALSE) DESC, suspendido_hasta ASC NULLS LAST;
+    `;
+    const result = await db.query(query);
+    return result.rows;
   }
 
   /**
@@ -253,6 +308,23 @@ class UsuarioModel {
       [usuarioId]
     );
     return result.rows[0]?.nombre || 'Vecino/a';
+  }
+
+  /**
+   * Datos de identidad para poder responderle a una persona.
+   *
+   * El token de sesión sólo lleva { id, rol }, así que el nombre, el DNI y el
+   * teléfono hay que buscarlos: sin esto el buzón de contacto guardaría a
+   * todos los autores como "Visitante" y la administración no podría saber a
+   * quién escribirle.
+   */
+  static async obtenerIdentidadPorId(usuarioId) {
+    const result = await db.query(
+      `SELECT id, nombre, apellido, dni, telefono
+       FROM usuarios WHERE id = $1 LIMIT 1;`,
+      [usuarioId]
+    );
+    return result.rows[0] || null;
   }
 }
 

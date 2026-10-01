@@ -92,6 +92,36 @@ async function requiereCuentaHabilitada(req, res, next) {
 }
 
 /**
+ * Arma la sesión si la hay, pero no la exige.
+ *
+ * Para el buzón de contacto: cualquiera puede escribir, y hasta conviene que
+ * pueda escribir una persona a la que le acaban de bloquear la cuenta, porque
+ * es justo cuando necesita poder preguntar algo. Si viene un token válido se
+ * guarda en req.usuario para poder completar el nombre, el DNI y el teléfono
+ * del autor; si no viene, la petición sigue igual y el mensaje se guarda sin
+ * datos identificatorios.
+ *
+ * Un token vencido o inválido NO es un error acá: se lo trata como visitante.
+ */
+async function requerirSesionOpcional(req, res, next) {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.usuario = payload;
+  } catch {
+    req.usuario = undefined;
+  }
+
+  return next();
+}
+
+/**
  * Restringe el acceso a usuarios con rol ADMIN.
  * Debe usarse SIEMPRE después de requerirSesion.
  */
@@ -108,6 +138,7 @@ function requerirAdmin(req, res, next) {
 
 module.exports = {
   requerirSesion,
+  requerirSesionOpcional,
   requiereCuentaHabilitada,
   requerirAdmin
 };

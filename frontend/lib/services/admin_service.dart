@@ -310,4 +310,118 @@ class AdminService {
       return {'exito': false, 'mensaje': 'Error de conexión con el servidor.'};
     }
   }
+
+  /// Cuentas bloqueadas o penalizadas, para revisarlas y levantarlas.
+  static Future<List<dynamic>> obtenerUsuariosBloqueados() async {
+    try {
+      final res = await http.get(
+        Uri.parse('${ApiService.baseUrl}/admin/usuarios-bloqueados'),
+        headers: await AuthService.construirHeaders(),
+      );
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        final datos = decoded is Map ? decoded['datos'] : null;
+        if (datos is Map && datos['bloqueados'] is List) {
+          return datos['bloqueados'] as List<dynamic>;
+        }
+      }
+    } catch (e) {
+      print('Error en obtenerUsuariosBloqueados: $e');
+    }
+    return [];
+  }
+
+  /// Da de alta nuevamente una cuenta bloqueada o penalizada.
+  static Future<Map<String, dynamic>> reactivarUsuario(int usuarioId) async {
+    return _postModeracion('/admin/reactivar', {'usuarioId': usuarioId});
+  }
+
+  /// Bandeja de mensajes del buzón de contacto.
+  static Future<Map<String, dynamic>> obtenerMensajesContacto(
+      {bool soloPendientes = false}) async {
+    try {
+      final sufijo = soloPendientes ? '?pendientes=1' : '';
+      final res = await http.get(
+        Uri.parse('${ApiService.baseUrl}/admin/contacto$sufijo'),
+        headers: await AuthService.construirHeaders(),
+      );
+      final decoded = jsonDecode(res.body);
+      final datos = decoded is Map ? decoded['datos'] : null;
+      if (res.statusCode == 200 && datos is Map) {
+        return {
+          'mensajes': (datos['mensajes'] as List?) ?? [],
+          'pendientes': datos['pendientes'] ?? 0,
+        };
+      }
+      return {
+        'mensajes': [],
+        'pendientes': 0,
+        'error': decoded is Map ? decoded['mensaje'] : null,
+      };
+    } catch (e) {
+      print('Error en obtenerMensajesContacto: $e');
+      return {
+        'mensajes': [],
+        'pendientes': 0,
+        'error': 'Error de conexión con el servidor.',
+      };
+    }
+  }
+
+  /// Cuántos mensajes hay sin responder. Es el número del aviso del panel.
+  static Future<int> contarMensajesPendientes() async {
+    try {
+      final res = await http.get(
+        Uri.parse('${ApiService.baseUrl}/admin/contacto/pendientes'),
+        headers: await AuthService.construirHeaders(),
+      );
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map && decoded['datos'] is Map) {
+          return (decoded['datos']['pendientes'] as num?)?.toInt() ?? 0;
+        }
+      }
+    } catch (e) {
+      print('Error en contarMensajesPendientes: $e');
+    }
+    return 0;
+  }
+
+  /// Guarda la respuesta de la administración a un mensaje.
+  static Future<Map<String, dynamic>> responderMensajeContacto(
+    int mensajeId,
+    String respuesta,
+  ) async {
+    return _postModeracion(
+      '/admin/contacto/$mensajeId/responder',
+      {'respuesta': respuesta},
+    );
+  }
+
+  static Future<bool> marcarMensajeLeido(int mensajeId) async {
+    try {
+      final res = await http.post(
+        Uri.parse('${ApiService.baseUrl}/admin/contacto/$mensajeId/leer'),
+        headers: await AuthService.construirHeaders(),
+        body: jsonEncode({}),
+      );
+      return res.statusCode == 200;
+    } catch (e) {
+      print('Error en marcarMensajeLeido: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> eliminarMensajeContacto(int mensajeId) async {
+    try {
+      final res = await http.delete(
+        Uri.parse('${ApiService.baseUrl}/admin/contacto/$mensajeId'),
+        headers: await AuthService.construirHeaders(),
+      );
+      return res.statusCode == 200;
+    } catch (e) {
+      print('Error en eliminarMensajeContacto: $e');
+      return false;
+    }
+  }
 }

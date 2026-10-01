@@ -13,8 +13,9 @@ const sugerenciaController = require('../controllers/sugerenciaController');
 const legalController = require('../controllers/legalController');
 const otpController = require('../controllers/otpController');
 const moderacionController = require('../controllers/moderacionController');
+const contactoController = require('../controllers/contactoController');
 
-const { requerirSesion, requiereCuentaHabilitada, requerirAdmin } = require('../middlewares/auth');
+const { requerirSesion, requerirSesionOpcional, requiereCuentaHabilitada, requerirAdmin } = require('../middlewares/auth');
 
 // Documentos legales (públicos). Se consultan antes de tener cuenta.
 router.get('/legal', legalController.listarDocumentos);
@@ -67,6 +68,9 @@ router.get('/admin/reportes', requerirSesion, requerirAdmin, reporteController.l
 router.post('/admin/reportes/:reporteId/desestimar', requerirSesion, requiereCuentaHabilitada, requerirAdmin, reporteController.desestimarReporte);
 router.post('/admin/dar-de-baja', requerirSesion, requiereCuentaHabilitada, requerirAdmin, reporteController.darDeBajaUsuario);
 router.post('/admin/suspender', requerirSesion, requiereCuentaHabilitada, requerirAdmin, reporteController.suspenderUsuario);
+// Camino inverso al bloqueo: ver y levantar cuentas penalizadas o dadas de baja.
+router.get('/admin/usuarios-bloqueados', requerirSesion, requerirAdmin, reporteController.listarUsuariosBloqueados);
+router.post('/admin/reactivar', requerirSesion, requiereCuentaHabilitada, requerirAdmin, reporteController.reactivarUsuario);
 router.get('/admin/sugerencias-esfuerzo', requerirSesion, requerirAdmin, sugerenciaController.listarSugerencias);
 router.post('/admin/sugerencias-esfuerzo/:id/aplicar', requerirSesion, requiereCuentaHabilitada, requerirAdmin, sugerenciaController.aplicarSugerencia);
 router.post('/admin/sugerencias-esfuerzo/:id/descartar', requerirSesion, requiereCuentaHabilitada, requerirAdmin, sugerenciaController.descartarSugerencia);
@@ -85,5 +89,20 @@ router.post('/admin/moderacion/:id/rechazar-menor', requerirSesion, requiereCuen
 router.post('/admin/moderacion/texto/:id/aprobar', requerirSesion, requiereCuentaHabilitada, requerirAdmin, moderacionController.aprobarPublicacionSinImagen);
 router.post('/admin/moderacion/texto/:id/rechazar', requerirSesion, requiereCuentaHabilitada, requerirAdmin, moderacionController.rechazarPublicacionSinImagen);
 router.post('/admin/moderacion/texto/:id/rechazar-menor', requerirSesion, requiereCuentaHabilitada, requerirAdmin, moderacionController.marcarPublicacionComoMenor);
+
+// Buzón de contacto. La sesión es opcional a propósito: si viene, se guarda
+// el nombre, DNI y teléfono del autor para poder responderle; si no viene,
+// también se puede escribir. Así una persona a la que acaban de bloquear la
+// cuenta no se queda sin forma de preguntar nada.
+router.post('/contacto', requerirSesionOpcional, contactoController.crearMensaje);
+
+// Buzón de contacto del panel. Todas las rutas de lectura y respuesta las ve
+// sólo el administrador: es el canal para contestar lo que llega.
+router.get('/admin/contacto', requerirSesion, requerirAdmin, contactoController.listarMensajes);
+router.get('/admin/contacto/pendientes', requerirSesion, requerirAdmin, contactoController.contarMensajesPendientes);
+router.get('/admin/contacto/:id', requerirSesion, requerirAdmin, contactoController.obtenerMensaje);
+router.post('/admin/contacto/:id/responder', requerirSesion, requiereCuentaHabilitada, requerirAdmin, contactoController.responderMensaje);
+router.post('/admin/contacto/:id/leer', requerirSesion, requerirAdmin, contactoController.marcarLeido);
+router.delete('/admin/contacto/:id', requerirSesion, requiereCuentaHabilitada, requerirAdmin, contactoController.eliminarMensaje);
 
 module.exports = router;

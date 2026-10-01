@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/admin_service.dart';
 import '../theme/app_theme.dart';
 import 'moderacion_screen.dart';
+import 'usuarios_bloqueados_screen.dart';
+import 'mensajes_contacto_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   final VoidCallback onCerrarSesion;
@@ -23,6 +25,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   List<dynamic> _reportes = [];
   List<dynamic> _sugerenciasEsfuerzo = [];
   Map<String, dynamic> _estadisticasModeracion = {};
+  int _mensajesPendientes = 0;
 
   @override
   void initState() {
@@ -49,6 +52,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  Future<void> _abrirUsuariosBloqueados() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UsuariosBloqueadosScreen(
+          modoAccesibleActivo: widget.modoAccesibleActivo,
+        ),
+      ),
+    );
+    _cargarDatos();
+  }
+
+  Future<void> _abrirMensajes() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MensajesContactoScreen(
+          modoAccesibleActivo: widget.modoAccesibleActivo,
+          alResponder: _cargarDatos,
+        ),
+      ),
+    );
+    _cargarDatos();
+  }
+
   Future<void> _cargarDatos() async {
     setState(() => _cargando = true);
 
@@ -57,6 +85,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       AdminService.obtenerReportesAdmin(),
       AdminService.obtenerSugerenciasEsfuerzo(),
       AdminService.obtenerEstadisticasModeracion(),
+      AdminService.contarMensajesPendientes(),
     ]);
 
     if (!mounted) return;
@@ -65,6 +94,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       _reportes = resultados[1] as List<dynamic>;
       _sugerenciasEsfuerzo = resultados[2] as List<dynamic>;
       _estadisticasModeracion = resultados[3] as Map<String, dynamic>;
+      _mensajesPendientes = resultados[4] as int;
       _cargando = false;
     });
   }
@@ -261,7 +291,55 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             tooltip: 'Actualizar datos',
             onPressed: _cargarDatos,
           ),
+          // Buzón de contacto. El badge avisa que entraron mensajes sin
+          // responder, que es el aviso que pidió que llegue al administrador.
+          Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: IconButton(
+              tooltip: _mensajesPendientes > 0
+                  ? 'Mensajes de la gente ($_mensajesPendientes sin responder)'
+                  : 'Mensajes de la gente',
+              onPressed: _abrirMensajes,
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(Icons.mark_email_unread_outlined,
+                      size: esAccesible ? 28 : 24),
+                  if (_mensajesPendientes > 0)
+                    Positioned(
+                      right: -6,
+                      top: -5,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: AppTheme.acentoNaranja,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.black, width: 1),
+                        ),
+                        child: Text(
+                          _mensajesPendientes > 99
+                              ? '99+'
+                              : '$_mensajesPendientes',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: esAccesible ? 12 : 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          // Cuentas bloqueadas o penalizadas, para poder levantarlas.
           IconButton(
+            icon: Icon(Icons.manage_accounts_outlined,
+                size: esAccesible ? 28 : 24),
+            tooltip: 'Cuentas bloqueadas',
+            onPressed: _abrirUsuariosBloqueados,
+          ),          IconButton(
             icon: Icon(Icons.logout, size: esAccesible ? 28 : 24),
             tooltip: 'Cerrar sesión Admin',
             onPressed: widget.onCerrarSesion,
@@ -344,6 +422,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     // Va arriba de todo a propósito: mientras haya algo
                     // esperando, es la tarea más urgente del panel.
                     _tarjetaModeracion(esAccesible),
+                    const SizedBox(height: 10),
+                    _tarjetaMensajes(esAccesible),
+                    const SizedBox(height: 10),
+                    _tarjetaUsuariosBloqueados(esAccesible),
                     const SizedBox(height: 16),
 
                     // Gráfico de Barras (Actividad mensual real)
@@ -858,8 +940,127 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _chipNivel(dynamic nivel, bool esAccesible, {bool destacado = false}) {
-    final String texto = (nivel ?? '').toString();
+  /// Tarjeta de entrada al buzón de mensajes.
+  ///
+  /// El número que muestra son los mensajes SIN responder, que es lo que hay
+  /// que hacer. Con cero no desaparece: así se sabe que el canal existe.
+  Widget _tarjetaMensajes(bool esAccesible) {
+    final int pendientes = _mensajesPendientes;
+    final bool hayAlgo = pendientes > 0;
+    final Color color =
+        hayAlgo ? AppTheme.acentoNaranja : AppTheme.acentoAzulTurquesa;
+
+    return InkWell(
+      onTap: _abrirMensajes,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: hayAlgo ? 0.14 : 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color, width: hayAlgo ? 1.5 : 1),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              hayAlgo
+                  ? Icons.mark_email_unread_outlined
+                  : Icons.mark_email_read_outlined,
+              color: color,
+              size: esAccesible ? 36 : 30,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hayAlgo
+                        ? '$pendientes mensaje${pendientes == 1 ? '' : 's'} sin responder'
+                        : 'Mensajes de la gente',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: esAccesible ? 18 : 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    hayAlgo
+                        ? 'Preguntas y comentarios que la gente te mandó.'
+                        : 'Nadie escribió nada todavía.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: esAccesible ? 14 : 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right,
+                color: color, size: esAccesible ? 28 : 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Tarjeta de entrada a las cuentas bloqueadas o penalizadas.
+  Widget _tarjetaUsuariosBloqueados(bool esAccesible) {
+    return InkWell(
+      onTap: _abrirUsuariosBloqueados,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.acentoAzulTurquesa.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.acentoAzulTurquesa),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.manage_accounts_outlined,
+              color: AppTheme.acentoAzulTurquesa,
+              size: esAccesible ? 36 : 30,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cuentas bloqueadas',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: esAccesible ? 18 : 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Revisá a quién se le bloqueó o se le puso una '
+                    'penalización, y volvé a darla de alta.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: esAccesible ? 14 : 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right,
+                color: AppTheme.acentoAzulTurquesa,
+                size: esAccesible ? 28 : 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _chipNivel(dynamic nivel, bool esAccesible, {bool destacado = false}) {    final String texto = (nivel ?? '').toString();
     Color color;
     switch (texto) {
       case 'SIMPLE':

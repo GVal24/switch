@@ -299,3 +299,42 @@ CREATE INDEX idx_moderacion_publicacion
 -- Evita que la misma imagen se procese dos veces por carrera
 CREATE UNIQUE INDEX idx_moderacion_archivo_unico
     ON moderacion_imagenes (nombre_archivo);
+
+-- ------------------------------------------------------------
+-- 13. TABLA: mensajes_contacto
+--     Preguntas, comentarios o pedidos de ayuda que cualquier persona
+--     le envía al equipo de administración.
+--
+--     Se guarda el texto de quien escribe aunque la cuenta luego se borre
+--     (usuario_id queda NULL): los datos personales se copian en columnas
+--     de texto para que el mensaje siga siendo legible y para poder
+--     responder aunque el autor ya no exista.
+--
+--     'leido' es lo que dispara el aviso en el panel: mientras sea FALSE
+--     el mensaje cuenta como pendiente de responder.
+-- ------------------------------------------------------------
+CREATE TABLE mensajes_contacto (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NULL REFERENCES usuarios(id) ON DELETE SET NULL,
+    autor_nombre VARCHAR(101) NOT NULL,        -- nombre y apellido al momento de escribir
+    autor_dni VARCHAR(20) NULL,                -- sólo si estaba conectado al escribir
+    autor_telefono VARCHAR(30) NULL,
+    asunto VARCHAR(60) NOT NULL,               -- 'PREGUNTA' | 'COMENTARIO' | 'CONTACTO'
+    mensaje TEXT NOT NULL,
+    respuesta TEXT NULL,                       -- lo que la administración contesta
+    respondido_por INT NULL REFERENCES usuarios(id) ON DELETE SET NULL,
+    respondido_en TIMESTAMP NULL,
+    leido BOOLEAN NOT NULL DEFAULT FALSE,
+    ip_origen VARCHAR(45) NULL,
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_asunto_contacto
+        CHECK (asunto IN ('PREGUNTA', 'COMENTARIO', 'CONTACTO'))
+);
+
+-- Bandeja del panel: primero lo que nadie leyó, y de lo más nuevo a lo más viejo
+CREATE INDEX idx_mensajes_contacto_pendientes
+    ON mensajes_contacto (leido, creado_en DESC);
+
+CREATE INDEX idx_mensajes_contacto_usuario
+    ON mensajes_contacto (usuario_id);

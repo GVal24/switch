@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import 'login_screen.dart';
 import 'mis_trueques_screen.dart';
+import '../widgets/contacto_dialog.dart';
 
 class PerfilScreen extends StatefulWidget {
   final Map<String, dynamic>? usuarioActual; // Usuario logueado
@@ -208,6 +209,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   color: context.colorTextoSuave, size: 24 * factorIconos),
               tooltip: 'Acceso Administración',
               onPressed: widget.onMostrarLoginAdmin,
+            ),
+          // Canal de contacto con la administración.
+          if (esMiPerfil)
+            IconButton(
+              icon: Icon(Icons.support_agent,
+                  color: context.colorTextoSuave, size: 24 * factorIconos),
+              tooltip: 'Escribinos',
+              onPressed: () => ContactoDialog.mostrar(context,
+                  esAccesible: widget.modoAccesibleActivo),
             ),
           // Banderita para reportar (solo al ver a OTRO usuario)
           if (!esMiPerfil)

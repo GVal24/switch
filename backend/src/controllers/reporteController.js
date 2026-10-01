@@ -125,10 +125,79 @@ const suspenderUsuario = asyncWrapper(async (req, res) => {
   });
 });
 
+/**
+ * Lista las cuentas bloqueadas o penalizadas.
+ *
+ * Es el reverso de darDeBajaUsuario y suspenderUsuario: sin esta pantalla la
+ * administración puede bloquear cuentas pero no tiene forma de volver atrás.
+ * La ruta la protege con requerirAdmin, así que sólo el administrador la ve.
+ */
+const listarUsuariosBloqueados = asyncWrapper(async (req, res) => {
+  const usuarios = await UsuarioModel.listarBloqueados();
+
+  res.status(200).json({
+    exito: true,
+    mensaje: usuarios.length > 0
+      ? 'Hay cuentas bloqueadas o penalizadas para revisar.'
+      : 'No hay cuentas bloqueadas ni penalizadas.',
+    datos: {
+      bloqueados: usuarios,
+      total: usuarios.length
+    }
+  });
+});
+
+/**
+ * Da de alta nuevamente una cuenta bloqueada.
+ *
+ * Sirve para los dos casos, y el modelo decide segun cuál era:
+ *  - penalización temporal: levanta la suspensión antes de que venza
+ *  - baja lógica permanente: vuelve a activar la cuenta
+ *
+ * No toca los nexos, las publicaciones ni los trueques: dar de alta a una
+ * persona no significa restaurar lo que publicó, que sigue pasando por la
+ * cola de moderación.
+ */
+const reactivarUsuario = asyncWrapper(async (req, res) => {
+  const { usuarioId } = req.body || {};
+  if (!usuarioId) {
+    throw new ValidationError("Se requiere el 'usuarioId' a dar de alta.");
+  }
+
+  const id = Number(usuarioId);
+  if (!Number.isInteger(id)) {
+    throw new ValidationError('El identificador del usuario no es válido.');
+  }
+
+  // Un admin no se bloquea a sí mismo: dejarse fuera del panel por error es
+  // una forma barata de perder el acceso a la plataforma.
+  if (id === req.usuario.id) {
+    throw new ValidationError('No podés dar de alta a tu propia cuenta de administración.');
+  }
+
+  const estado = await UsuarioModel.obtenerEstadoHabilitacion(id);
+  if (!estado) {
+    throw new NotFoundError('El usuario indicado no existe.');
+  }
+
+  const usuario = await UsuarioModel.reactivar(id);
+  if (!usuario) {
+    throw new NotFoundError('El usuario indicado no existe.');
+  }
+
+  res.status(200).json({
+    exito: true,
+    mensaje: `${usuario.nombre} ${usuario.apellido} fue dado de alta nuevamente.`,
+    datos: usuario
+  });
+});
+
 module.exports = {
   reportarUsuario,
   listarReportes,
   desestimarReporte,
   darDeBajaUsuario,
-  suspenderUsuario
+  suspenderUsuario,
+  listarUsuariosBloqueados,
+  reactivarUsuario
 };

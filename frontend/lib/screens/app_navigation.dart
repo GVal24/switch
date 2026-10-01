@@ -4,6 +4,7 @@ import 'catalogo_p2p_screen.dart';
 import 'accesibilidad_screen.dart';
 import 'admin_dashboard_screen.dart';
 import 'perfil_screen.dart';
+import 'contacto_screen.dart';
 import '../services/api_service.dart';
 
 class AppNavigation extends StatefulWidget {
@@ -25,6 +26,9 @@ class AppNavigation extends StatefulWidget {
 }
 
 class _AppNavigationState extends State<AppNavigation> {
+  /// Posición de la pestaña de admin. Tiene que ser la última.
+  static const int _indiceAdmin = 5;
+
   int _indiceActual = 0;
   bool _adminAutenticado = false;
 
@@ -263,6 +267,12 @@ class _AppNavigationState extends State<AppNavigation> {
         onToggleAccesibilidad: widget.onToggleAccesibilidad,
         modoAccesibleActivo: widget.modoAccesibleActivo,
       ),
+      // Canal de contacto con la administración. Va antes de la pestaña de
+      // admin para que el índice del admin sea siempre el último, y así el
+      // chequeo de "todavía no estás logueado como admin" no se mueve.
+      ContactoScreen(
+        modoAccesibleActivo: widget.modoAccesibleActivo,
+      ),
       if (_adminAutenticado)
         AdminDashboardScreen(
           onCerrarSesion: _cerrarSesionAdmin,
@@ -317,7 +327,10 @@ class _AppNavigationState extends State<AppNavigation> {
           fontSize: widget.modoAccesibleActivo ? 15 : 12,
         ),
         onTap: (index) {
-          if (index == 4 && !_adminAutenticado) {
+          // El admin es la ÚLTIMA pestaña. Si todavía no se autenticó como
+          // admin, ese lugar no existe en la lista de pantallas y se abre el
+          // login en su lugar.
+          if (index == _indiceAdmin && !_adminAutenticado) {
             _mostrarLoginAdmin();
           } else if (index < pantallas.length) {
             setState(() => _indiceActual = index);
@@ -339,6 +352,10 @@ class _AppNavigationState extends State<AppNavigation> {
           const BottomNavigationBarItem(
             icon: Icon(Icons.accessibility_new),
             label: 'Accesibilidad',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.mark_email_unread_outlined),
+            label: 'Contacto',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.admin_panel_settings),
