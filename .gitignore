@@ -1,0 +1,51 @@
+# ============================================================
+# PROYECTO SWITCH — archivos que NO van al repositorio
+# ============================================================
+# Ojo: estorules son por CAPA. Flutter ya trae su propio
+# frontend/.gitignore con lo suyo (dart_tool, build, .idea, etc.),
+# así que acá sólo va lo del proyecto entero.
+
+# ------------------------------------------------------------
+# Dependencias de Node: se reinstalan con `npm install`.
+#
+# Estas carpetas YA estaban versionadas antes de existir este
+# archivo, y .gitignore no las saca por sí solo. Siguen
+# versionadas hasta que se saquen con `git rm -r --cached`.
+# Esta regla evita que se vuelvan a sumar archivos nuevos.
+# ------------------------------------------------------------
+node_modules/
+
+# ------------------------------------------------------------
+# Imágenes que sube la gente.
+# uploads/ tiene las imágenes ya aprobadas; uploads/_cuarena/
+# las que esperan revisión de una persona. Son archivos de los
+# usuarios, no código: no van al repositorio.
+# ------------------------------------------------------------
+backend/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ------------------------------------------------------------
+# .env — DELIBERADAMENTE NO SE IGNORA
+# ------------------------------------------------------------
+# En este proyecto .env se versiona a propósito: se quiere que
+# quien descargue el repositorio pueda levantar la app sin tener
+# que configurar nada a mano.
+#
+# El día que acá haya una clave real y no de desarrollo, hay que
+# cambiar a este esquema: .env.example versionado (sólo los
+# nombres de las variables, sin valores) y .env local ignorado.
+# ------------------------------------------------------------
+
+# Archivos que nunca deben perderse
+!schema.sql
+!seed.sql
+!backend/package-lock.json
+!frontend/pubspec.lock
