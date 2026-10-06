@@ -8,12 +8,6 @@
  * IMPORTANTE: los textos se redactaron contrastados contra lo que el sistema
  * hace hoy. Donde la funcionalidad no existe, el texto lo dice. No se afirma
  * ninguna protección que el código no aplique.
- *
- * Los datos que todavía hay que completar antes de publicar la app (identidad
- * del responsable, plazos de conservación, canal de contacto, proveedor de
- * mensajería) NO van en estos textos: están en PENDIENTES_LEGALES.txt, que es
- * un documento interno de trabajo. El texto que lee la persona usuaria no
- * muestra listas de cosas por hacer.
  */
 
 const VERSION = '1.0.0';

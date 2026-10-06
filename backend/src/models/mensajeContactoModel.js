@@ -98,10 +98,8 @@ class MensajeContactoModel {
   /**
    * Guarda la respuesta de la administración y marca el mensaje como leído.
    *
-   * Marcar leído y contestado va junto a propósito: si la respuesta queda
-   * guardada, el mensaje está atendido. Dejar 'leido' para un paso aparte
-   * hacía que el contador del panel mostrara 0 pendientes con respuestas
-   * escritas a medio terminar.
+   * Marcar leído y contestado van juntos: cuando la respuesta queda
+   * guardada, el mensaje está atendido.
    */
   static async responder(mensajeId, respuesta, adminId) {
     const result = await db.query(

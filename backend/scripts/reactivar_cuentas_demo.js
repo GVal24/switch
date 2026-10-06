@@ -1,11 +1,6 @@
 /**
  * Da de alta nuevamente las cuentas de la demo que estaban bloqueadas.
  *
- * Por que: la cuenta principal de la demo (Guillermina) quedó suspendida y la
- * otra (Diego) dada de baja, así que no se podía mostrar el circuito de
- * moderación con cuentas reales. Ninguna de las dos estaba penalizada por una
- * sanción de verdad: los bloqueos venían de los datos de arranque.
- *
  * No cambia publicaciones, imágenes ni sesiones: sólo los campos de bloqueo.
  * Es idempotente: correrlo de nuevo no hace nada.
  */

@@ -484,10 +484,8 @@ class _BotonFiltro extends StatelessWidget {
 
 /// Escribe la respuesta de la administración.
 ///
-/// StatefulWidget a propósito: el `TextEditingController` se libera en su propio
-/// `dispose`. Si se crea en la pantalla y se destruye apenas vuelve el
-/// `showDialog`, el `TextField` sigue montado durante la animación de cierre y
-/// revienta con "A TextEditingController was used after being disposed".
+/// StatefulWidget a propósito: posee su propio `TextEditingController` y lo
+/// libera en `dispose`, para que su ciclo de vida no dependa del diálogo.
 class _DialogoRespuesta extends StatefulWidget {
   final Map<String, dynamic> mensaje;
   final bool esAccesible;

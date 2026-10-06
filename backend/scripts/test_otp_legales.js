@@ -88,11 +88,10 @@ async function main() {
     !JSON.stringify(terminos.json).includes('Delegado Digital')
   );
 
-  // Los pendientes van en PENDIENTES_LEGALES.txt, no en el texto que lee la
-  // persona usuaria: no tiene que ver listas de cosas por hacer.
-  // Ojo: el estado interno "PENDIENTE_REVISION" sí aparece en el texto, y
-  // tiene que aparecer: es parte de la explicación de la revisión previa. Lo
-  // que no debe aparecer son los marcadores de trabajo "PENDIENTE: ...".
+  // El texto que lee la persona usuaria no lleva listas de trabajo pendiente:
+  // no debe aparecer un marcador "PENDIENTE: ...". El estado interno
+  // "PENDIENTE_REVISION" sí aparece y tiene que aparecer: es parte de la
+  // explicación de la revisión previa.
   afirmar(
     'los términos no muestran marcadores de trabajo',
     !/PENDIENTE\s*:/i.test(JSON.stringify(terminos.json))

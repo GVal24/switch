@@ -292,7 +292,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             onPressed: _cargarDatos,
           ),
           // Buzón de contacto. El badge avisa que entraron mensajes sin
-          // responder, que es el aviso que pidió que llegue al administrador.
+          // responder.
           Padding(
             padding: const EdgeInsets.only(right: 6),
             child: IconButton(
@@ -877,7 +877,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   /// Tarjeta de entrada a la cola de moderación.
   ///
   /// Se muestra incluso con cero pendientes, para que quede claro que la
-  /// revisión previa sí existe y no es un forgotón del filtro automático.
+  /// revisión previa existe.
   Widget _tarjetaModeracion(bool esAccesible) {
     final int pendientes = _pendientesModeracion;
     final bool hayAlgo = pendientes > 0;

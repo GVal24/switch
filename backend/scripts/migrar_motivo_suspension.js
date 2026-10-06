@@ -1,11 +1,8 @@
 /**
- * Migracion: agrega `usuarios.motivo_suspension`.
+ * Migración: agrega `usuarios.motivo_suspension`.
  *
- * Por que: al marcar una publicacion sin imagen como "posible imagen de
- * menor" (Ley 26.061) el modelo escribe el motivo de la suspension en esa
- * columna. La columna no existia, asi que ese camino reventaba con un error
- * de PostgreSQL (42703: la columna "motivo_suspension" no existe) y la
- * cuenta del autor nunca quedaba suspendida.
+ * Cuando se marca una publicación sin imagen como "posible imagen de menor"
+ * (Ley 26.061), el modelo escribe el motivo de la suspensión en esta columna.
  *
  * Es idempotente: se puede correr las veces que haga falta.
  */

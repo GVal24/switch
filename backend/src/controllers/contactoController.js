@@ -40,8 +40,7 @@ const crearMensaje = asyncWrapper(async (req, res) => {
   // nombre que mande en el body, para que nadie firme como otro.
   //
   // El token sólo lleva { id, rol }, así que el nombre, el DNI y el teléfono
-  // se leen de la base. Sin esa búsqueda el mensaje quedaba guardado como
-  // "Visitante" y la administración no tenía a quién responderle.
+  // se leen de la base.
   let identidad = null;
   if (req.usuario?.id) {
     identidad = await UsuarioModel.obtenerIdentidadPorId(req.usuario.id);
