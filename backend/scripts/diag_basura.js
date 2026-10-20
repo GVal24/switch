@@ -1,7 +1,7 @@
 /**
  * Cruza los archivos de uploads/ con las publicaciones de la base para
  * separar las fotos reales de la app de los archivos huérfanos que dejaron
- * las pruebas. Sólo informa: no borra nada.
+ * las pruebas.
  */
 require('dotenv').config();
 const fs = require('fs');
@@ -43,8 +43,8 @@ const almacen = require('../src/services/almacenImagenes');
 
   console.log(`\nResumen: ${archivos.length} archivos, ${referenciados.size} referenciados, ${huerfanos.length} huérfanos.`);
 
-  // Sólo borra archivos que ninguna publicación referencia. Las fotos que sí
-  // están en uso no se tocan nunca, así que esto es seguro de repetir.
+  // Sólo borra archivos que ninguna publicación referencia.
+  // Las fotos que sí están en uso no se tocan nunca.
   if (process.argv[2] === 'limpiar' && huerfanos.length) {
     let borrados = 0;
     for (const f of huerfanos) {

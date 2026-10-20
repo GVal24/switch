@@ -1,6 +1,6 @@
 /**
  * Genera imágenes PNG de los QR de todas las instituciones registradas,
- * listas para imprimir y pegar en la entrada de cada institución.
+ * listas para imprimir y pegar en cada institución.
  *
  * Uso:  node scripts/generarQrs.js
  * Salida: backend/qrs_instituciones/<nombre>.png

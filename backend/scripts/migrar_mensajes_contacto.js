@@ -1,11 +1,5 @@
 /**
  * Migracion: crea la tabla `mensajes_contacto`.
- *
- * Por que: es el buzon donde cualquier persona le escribe a la administracion
- * (preguntas, comentarios o un simple "necesito ayuda"). Sin esta tabla no
- * hay donde guardar el mensaje ni como avisarle al administrador que hay algo
- * nuevo para contestar.
- *
  * El script lee el bloque de la tabla desde schema.sql para que las dos cosas
  * no se puedan separar. Es idempotente: si la tabla ya existe, no hace nada.
  */
@@ -16,7 +10,6 @@ const db = require('../src/config/db');
 
 /**
  * Extrae del schema.sql el bloque CREATE TABLE mensajes_contacto.
- *
  * Corta en el primer ';' que esté fuera de paréntesis y fuera de un
  * comentario, así que un ';' escrito dentro de una nota no trunca la
  * sentencia a la mitad.

@@ -3,7 +3,6 @@
  *   - moderacion_imagenes (cola de revisión de imágenes)
  *   - estados nuevos de publicaciones_p2p (PENDIENTE_REVISION, Rechazada)
  *   - filtro_motivos como JSONB
- *
  * Es idempotente. Ejecutar con: node backend/scripts/migrar_moderacion.js
  */
 require('dotenv').config();
